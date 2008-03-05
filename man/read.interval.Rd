@@ -81,7 +81,7 @@ a list of class "\code{cross}" that also inherits the class
   rules of "\code{missgeno}"; "\code{dist}" contains the genetic
   distance between adjacent markers or the genetic distances of the
   intervals; "\code{theta}" contains the recombination fractions for
-  each interval; "\code{interval}" contains the recalculated intervals
+  each interval; "\code{intval}" contains the recalculated intervals
   based on the recombination fractions and the missing marker information.}
 \item{cor.markers}{
 If \code{rem.mark = TRUE}, a three column matrix with each row

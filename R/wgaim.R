@@ -10,10 +10,10 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
 
   if(missing(parentData))
     stop("parentData is a required argument.")
-  if(!inherits(parentData, "cross"))
+  if(!inherits(parentData, "interval"))
     stop("parentData is not of class \"interval\"")
   if(is.null(parentData$full.data))
-    stop("parentData should have component \"full.data\" (see ?wgaim.merge).")
+    stop("parentData should have component \"full.data\" (see ?wmerge).")
   if(is.character(trace)){
     ftrace <- file(trace, "w")
     sink(trace, type = "output", append = FALSE)   
@@ -31,7 +31,7 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
   basedata <- eval(baseModel$call$data)
   bnams <- names(basedata)
   if(any(is.na(pmatch(bnams, dnams))))
-    stop("baseModel data names do not match phenotypic parentData names")
+    stop("Some baseModel data names do not match phenotypic parentData names")
   whn <- unlist(lapply(basedata, is.numeric))
   whn <- whn[whn][1]
   diff <- unique(abs(basedata[[names(whn)]] - asdata[[names(whn)]]))
@@ -265,14 +265,19 @@ read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
   on.exit(options(oldops))
   if(length(genotypes) > 2)
     stop("This uses a modified version of the read.cross() function from
- the qtl package. This strict modification only allows two genotypes \"A\" and \"B\"") 
-  fullgeno <- read.crossQ(format, dir, file, genfile, mapfile, phefile, chridfile, mnamesfile, pnamesfile, na.strings, genotypes, estimate.map, convertXdata, ...)  
+  the qtl package. This strict modification only allows two genotypes \"A\" and \"B\"")
+  fullgeno <- read.crossQ(format = format, dir, file = file, genfile, mapfile, phefile, chridfile,
+   mnamesfile, pnamesfile, na.strings, genotypes = genotypes, convertXdata = convertXdata, estimate.map = estimate.map, ...)
+  fullgeno <- drop.nullmarkers(fullgeno)
   if(!(id %in% names(fullgeno$pheno)))
     stop("The unique identifier for the genotypic rows, ", deparse(substitute(id)), ",cannot be found in genotypic data") 
   if(!is.null(subset))
     fullgeno <- subset(fullgeno, chr = subset)
-  if(rem.mark)
-    fullgeno <- fix.map(fullgeno, dir, id)
+  if(rem.mark) {
+    tpheno <- fullgeno$pheno
+    fullgeno <- fix.map(fullgeno, dir, file, id)
+    fullgeno$pheno <- tpheno
+  }
   lid <- as.character(fullgeno$pheno[[id]])
   fullgeno$geno <- lapply(fullgeno$geno, function(el, lid) {
     row.names(el$data) <- as.character(lid)
@@ -427,11 +432,10 @@ wmerge <- function(geno, pheno, by = NULL, ...){
   geno  
 }
 
-read.crossQ <- function (format = c("csv", "csvr", "csvs", "csvsr", "mm", "qtx", 
-    "qtlcart", "gary", "karl"), dir = "", file, genfile, mapfile, 
-    phefile, chridfile, mnamesfile, pnamesfile, na.strings = c("-", 
-        "NA"), genotypes = c("A", "H", "B", "D", "C"), estimate.map = TRUE, 
-    convertXdata = TRUE, ...) 
+read.crossQ <- function (format = c("csv", "csvr", "csvs", "csvsr", "mm",
+   "qtx", "tlcart", "gary", "karl"), dir, file, genfile, mapfile, 
+    phefile, chridfile, mnamesfile, pnamesfile, na.strings, genotypes,
+    estimate.map, convertXdata, ...) 
 {
     if (format == "csvrs") {
         format <- "csvsr"
@@ -524,7 +528,7 @@ read.crossQ <- function (format = c("csv", "csvr", "csvs", "csvsr", "mm", "qtx",
     cross
 }
 
-fix.map <- function(full.data, dir, id){
+fix.map <- function(full.data, dir, file, id){
     full.data <- est.rf(full.data)
     mymat <- full.data$rf
     mymat[!lower.tri(mymat)] <- NA     
@@ -539,13 +543,14 @@ fix.map <- function(full.data, dir, id){
     finallist <- cbind(names(mylist),names(mymat)[mylist],indexnames[mylist])
     newmap <- drop.markers(full.data, unique(finallist[,1]))
     cat("\nDropping coincident markers.....\n")
-    cat("Creating new map....\n\n")    
     newdat <- do.call("rbind", lapply(newmap$geno, function(el) t(el$data)))
-    newdat <- cbind.data.frame(row.names(newdat), rep(names(nmar(newmap)), times = nmar(newmap)), newdat)
-    names(newdat) <- c("id", "", as.character(newmap$pheno[,id])) 
-    write.csv(newdat, paste(dir,"newmap.csv",sep="\\"), row.names=FALSE)
+    newdat <- cbind.data.frame(row.names(newdat), rep(names(nmar(newmap)), times = nmar(newmap)), newdat)   
+    names(newdat) <- c(id, "", as.character(newmap$pheno[,id]))
+    fsub <- paste(substring(file, 1, nchar(file) - 4), "NEW.csv", sep ="")
+    cat("Creating new map",deparse(substitute(fsub)),"....\n\n")
+    write.csv(newdat, paste(dir, fsub, sep="\\"), row.names=FALSE)
     # Read newmap back in.
-    full.data <- read.cross("csvr", dir, file="newmap.csv", genotypes=c("1","2"), na.strings="NA")
+    full.data <- read.cross("csvr", dir, file=fsub, genotypes=c("1","2"), na.strings="NA")
     full.data$cor.markers <- finallist
     full.data
   }
