@@ -41,7 +41,7 @@ to ensure that the phenotypic data (which may include columns containing
 important design information) remains intact.     
 }
 \value{a list contaning identical components as returned by
-  \code{wgaim.read.cross} or possibly \code{read.cross} plus the
+  \code{read.interval} or possibly \code{read.cross} plus the
   additional following components
   \item{pheno.dat}{A copy of the phenotypic data used in the merge}
   \item{full.data}{A copy of the full data, i.e the genotypic data merged
@@ -51,8 +51,6 @@ important design information) remains intact.
 \author{Julian Taylor, Simon Diffey, Ari Verbyla and Brian Cullis}
 \seealso{\code{\link{wgaim}}, \code{\link{read.interval}}}
 \examples{
-
-\dontrun{
 
 # read in data 
 
@@ -64,7 +62,6 @@ data(raccas, package = "wgaim")
 raccasS <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
 raccasM <- wmerge(raccasS, zinc, by = "id")
 
-}
 }
 
 \keyword{regression}

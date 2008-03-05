@@ -13,8 +13,8 @@
   typed at 663 markers over 40 chromosomes. Coincident markers have been
   omitted and the data set has been reduced to 468 markers. This
   genotypic data has actually been read in from a call to
-  \code{wgaim.read.cross} and is therefore a list with components of the
-  a returned object from \code{wgaim.read.cross}. See the aformentioned
+  \code{read.interval} and is therefore a list with components of the
+  a returned object from \code{read.interval}. See the aformentioned
   function for more details. 
   }
 \source{

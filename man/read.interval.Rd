@@ -12,7 +12,7 @@ read.interval(format = c("csv", "csvr", "csvs", "csvsr", "mm",
 "qtx", "tlcart", "gary", "karl"), dir = getwd(), file, genfile, mapfile,
 phefile, chridfile, mnamesfile, pnamesfile, na.strings = c("-", "NA"),
 genotypes = c("A", "B"), estimate.map = TRUE, convertXdata = TRUE,
-missgeno = c("Broman", "MartinezCurnow"), rem.mark = TRUE, id = "id",
+missgeno = "MartinezCurnow", rem.mark = TRUE, id = "id",
 subset = NULL, \ldots)
 }
 \arguments{
@@ -29,11 +29,11 @@ subset = NULL, \ldots)
   \item{genotypes}{see \code{read.cross}}
   \item{estimate.map}{see \code{read.cross}}
   \item{convertXdata}{see \code{read.cross}} 
-  \item{missgeno}{a character string determining how missing values
-    should be imputed. If "\code{Broman}", then missing values are
+  \item{missgeno}{a character string determining how missing values in
+    the linkage map should be imputed. If "\code{Broman}", then missing values are
     imputed according to Bromans rules. If "\code{MartinezCurnow}" then
     missing values are imputed according to the rules of Martinez &
-    Curnow (1994) (see reference list).}
+    Curnow (1994) (see reference list). The default is "\code{MartinezCurnow}"}
   \item{rem.mark}{logical value. If \code{TRUE} redundant markers are deleted
     and placed in the component of the object (see details). Defaults to
   \code{TRUE}.}
@@ -49,8 +49,8 @@ subset = NULL, \ldots)
 \details{
 This function uses a *modified* verison of Bromans' \code{read.cross}
 function to read in the genotypic data and estimate the linkage
-map. This *strict* modification only allows two genotypes which, in this
-case, the defaults are "A" and "B". Attempting more than this will cause
+map. This *strict* modification only allows two genotypes which are the
+defaults "A" and "B". Attempting more than this will cause
 an error.
 
 Bromans' \code{read.cross} and this function by default read genotypic information as
@@ -110,7 +110,7 @@ they are from.}
 # identifier for each unique row
 
 racca <- read.interval("csvr", file="raccasgroups.csv", genotypes=c("A","B"),
-, missgeno="MartinezCurnow", id = "id", na.strings = c("-", "NA"))
+missgeno="MartinezCurnow", id = "id", na.strings = c("-", "NA"))
 
 # plot linkage map
 

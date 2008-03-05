@@ -29,7 +29,7 @@ genetic distances and recombination fractions for the intervals. Using
 \code{\link{wmerge}} the phenotypic data can then be easily
 merged with the estimated map from \code{\link{read.interval}}. The returned
 object from \code{\link{read.interval}} or \code{\link{wmerge}}
-retains the class structure of a \code{read.cross} object for further
+retains the class structure of an object from \code{read.cross} for further
 use with the \pkg{qtl} package if desired. 
 
 The package also provides a very neat graphical display of the

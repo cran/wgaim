@@ -115,9 +115,10 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
         b <- b + 1
         if(b > attempts) {
         message("Error message:\nLikelihood not converging or one or more parameters are unstable,
-try increasing the number of attempts or change the model. Full details
-of QTL model can be found in ..$QTL")
-        baseModel$QTL$qtlModel <- add.qtl
+try increasing the number of attempts or change the model. For diagnostic purposes the current fixed
+QTL model is returned and full details of the current working random QTL model can be found in ..$QTL")
+        assign("asdata", asdata, envir = .GlobalEnv) 
+        baseModel$QTL$qtlModel <- add.qtl        
         return(invisible(baseModel))
       }
       }
@@ -134,10 +135,11 @@ of QTL model can be found in ..$QTL")
       q <- q + 1
       if(q > attempts) {
         message("Error message:\nLikelihood not converging or one or more parameters are unstable,
-try increasing the number of attempts or change the model. Full details
-of QTL model can be found in ..$QTL")
+try increasing the number of attempts or change the model.  For diagnostic purposes the current fixed
+QTL model is returned and full details of the current working random QTL model can be found in ..$QTL")
+        assign("asdata", asdata, envir = .GlobalEnv) 
         baseModel$QTL$qtlModel <- add.qtl
-        return(invisible(add.qtl))
+        return(invisible(baseModel))
       }
     }
     while(any(fwarn(add.qtl)))
@@ -255,7 +257,7 @@ read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
    "qtx", "tlcart", "gary", "karl"), dir = getwd(), file, genfile, mapfile, 
     phefile, chridfile, mnamesfile, pnamesfile, na.strings = c("-", 
         "NA"), genotypes = c("A", "B"), estimate.map = TRUE, 
-    convertXdata = TRUE, missgeno = c("Broman", "MartinezCurnow"),
+    convertXdata = TRUE, missgeno = "MartinezCurnow",
     rem.mark = TRUE, id = "id", subset = NULL, ...) {
 
   oldops <- options()
@@ -298,12 +300,16 @@ read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
     fullgeno$geno[[i]]$theta <- 0.5*(1-exp(-2*fullgeno$geno[[i]]$dist))                                        
     fullgeno$geno[[i]]$E.lambda <- fullgeno$geno[[i]]$theta/(2*fullgeno$geno[[i]]$dist*(1-fullgeno$geno[[i]]$theta))                          
   }
-  if(missing(missgeno) | missgeno=="MartinezCurnow"){
+  mtype <- c("Broman", "MartinezCurnow")
+  if(is.na(type <- pmatch(missgeno, mtype)))
+    stop("Missing marker type must be one of \"Broman\" or \"MartinezCurnow\". Partial matching is allowed.")
+  missgeno <- mtype[type]  
+  if(missgeno=="MartinezCurnow"){
     for(i in chnam.2){
       dtemp <- fullgeno$geno[[i]]$data
       for(j in 1:ncol(fullgeno$geno[[i]]$data))
         dtemp[,j] <-  as.numeric(sub(2,-1,fullgeno$geno[[i]]$data[,j]))
-      fullgeno$geno[[i]]$argmax <- dtemp  
+      fullgeno$geno[[i]]$argmax <- dtemp
     }
     for(p in 1:length(chnam.2))
       fullgeno$geno[[p]]$argmax <- miss.q(fullgeno$geno[[p]]$theta, fullgeno$geno[[p]]$argmax)
@@ -311,9 +317,10 @@ read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
   else {
     fullgeno <- argmax.geno(fullgeno)
     for(i in chnam.2){
-      for(j in 1:ncol(fullgeno$geno[[i]]$argmax)){
-        fullgeno$geno[[i]]$argmax[,j] <- as.numeric(sub(2,-1,fullgeno$geno[[i]]$argmax[,j]))}
-    }
+      for(j in 1:ncol(fullgeno$geno[[i]]$argmax))
+        fullgeno$geno[[i]]$argmax[,j] <- as.numeric(sub(2,-1,fullgeno$geno[[i]]$argmax[,j]))
+      dimnames(fullgeno$geno[[i]]$argmax)[[1]] <- dimnames(fullgeno$geno[[1]]$data)[[1]]
+    }    
   }
   for(i in chnam.2){
     lambda <- addiag(fullgeno$geno[[i]]$E.lambda,-1) + addiag(c(fullgeno$geno[[i]]$E.lambda,0),0) 

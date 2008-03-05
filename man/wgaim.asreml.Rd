@@ -9,7 +9,6 @@
 \method{wgaim}{asreml}(baseModel, parentData, TypeI = 0.05, attempts = 5,
                        trace = TRUE, \ldots)
 }
-%- maybe also 'usage' for other objects documented here.
 \arguments{
   \item{baseModel}{A model of class "\code{asreml}" usually representing
     a base model with which to build the qtl model.  
