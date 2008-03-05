@@ -7,7 +7,8 @@ Neatly plots the genetic linkage map with marker locations and
 marker names. 
 }
 \usage{
-\method{link.map}{cross}(object, chr, max.dist, marker.names = TRUE, horizontal = FALSE, \ldots)
+\method{link.map}{cross}(object, chr, max.dist, marker.names = TRUE,
+tick = FALSE, \ldots)
 }
 
 \arguments{
@@ -17,8 +18,8 @@ marker names.
     genetic map should be subsetted by}
   \item{marker.names}{logical value. If \code{TRUE} then marker names
     are plotted alongside each chromosome on the left. Defaults to \code{TRUE}}
-  \item{horizontal}{logical value. If \code{TRUE} then map is plotted
-    horizontally. Defaults to \code{FALSE}}
+  \item{tick}{logical value. If \code{TRUE} then an axis with tick marks are
+    generated for the chromosome names}
   \item{\ldots}{arguments passed to "\code{plot}" to set up the plot
     region. Arguments may also be passed to "\code{text}" for the
     manipulation of the marker names}

@@ -399,38 +399,41 @@ read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
 ##   fullgeno
 ## }                   
 
-
-wmerge <- function(geno, pheno, by = NULL, ...){
-  if(missing(pheno) | missing(geno))
-    stop("geno and pheno are required arguments")
-  if(!inherits(geno, "interval"))
-    stop("Genotypic data needs to be of class \"interval\".")  
-  if(is.null(by))
-    stop("Need name of matching column to merge datasets.")
-  if(is.character(pheno))
-    pheno <- asreml.read.table(pheno, ...)
-  if(is.null(other <- geno$pheno[,by]))
-    stop("Genotypic data does not contain column \"",by,"\".")
-  if(is.null(pheno[,by]))
-    stop("Phenotypic data does not contain column \"",by,"\".")
-  mby <- pmatch(as.character(other), as.character(pheno[,by]))   
-  if(all(is.na(mby)))
-    stop("Names in Genotypic \"",by,"\" column do not match any names in Phenotypic \"",by,"\" column.")
-  gdat <- lapply(geno$geno, function(el) el$intval)
-  temp <- cbind.data.frame(other, do.call("cbind", gdat))
-  nch <- rep(names(nmar(geno)),nmar(geno) - 1)
-  nint <- list()
-  for(i in 1:nchr(geno))
-      nint[[i]] <- seq(1,nmar(geno)[i] - 1)
-  nint <- unlist(nint)
-  names(temp) <- c(by, paste("Chr", nch, nint, sep="."))
-  geno$pheno.dat <- pheno
-  pheno <- cbind(ord = 1:nrow(pheno), pheno)
-  geno$full.data <- merge(pheno, temp, by.x = by, by.y = by, all.x = TRUE, all.y = FALSE)
-  geno$full.data <- geno$full.data[order(geno$full.data$ord),]
-  geno$full.data <- geno$full.data[,-2]
-  geno  
+wmerge <- function (geno, pheno, by = NULL, ...)
+{
+    if (missing(pheno) | missing(geno))
+        stop("geno and pheno are required arguments")
+    if (!inherits(geno, "interval"))
+        stop("Genotypic data needs to be of class \"interval\".")
+    if (is.null(by))
+        stop("Need name of matching column to merge datasets.")
+    if (is.character(pheno))
+        pheno <- asreml.read.table(pheno, ...)
+    if (is.null(other <- geno$pheno[, by]))
+        stop("Genotypic data does not contain column \"", by, "\".")
+    if (is.null(pheno[, by]))
+        stop("Phenotypic data does not contain column \"", by, "\".")
+    mby <- pmatch(as.character(other), as.character(pheno[, by]))
+    if (all(is.na(mby)))
+        stop("Names in Genotypic \"", by, "\" column do not match any names in Phenotypic \"",
+            by, "\" column.")
+    gdat <- lapply(geno$geno, function(el) el$intval)
+    n.int <- lapply(geno$geno, function(el) dim(el$intval)[2])
+    temp <- cbind.data.frame(other, do.call("cbind", gdat))
+    nch <- rep(names(nmar(geno)), unlist(n.int))
+    nint <- list()
+    for (i in 1:nchr(geno)) nint[[i]] <- seq(1, n.int[[i]])
+    nint <- unlist(nint)
+    names(temp) <- c(by, paste("Chr", nch, nint, sep = "."))
+    geno$pheno.dat <- pheno
+    pheno <- cbind(ord = 1:nrow(pheno), pheno)
+    geno$full.data <- merge(pheno, temp, by.x = by, by.y = by,
+        all.x = TRUE, all.y = FALSE)
+    geno$full.data <- geno$full.data[order(geno$full.data$ord),]
+    geno$full.data <- geno$full.data[, -2]
+    geno
 }
+
 
 read.crossQ <- function (format = c("csv", "csvr", "csvs", "csvsr", "mm",
    "qtx", "tlcart", "gary", "karl"), dir, file, genfile, mapfile, 
@@ -632,7 +635,7 @@ miss.q <- function(theta, chr){
 link.map <- function(object, ...)
   UseMethod("link.map")
 
-link.map.cross <- function(object, chr, max.dist, marker.names = TRUE, horizontal = FALSE, ...){
+link.map.cross <- function(object, chr, max.dist, marker.names = TRUE, tick = FALSE, ...){
 
   dots <- list(...)
   old.xpd <- par("xpd")
@@ -658,8 +661,8 @@ link.map.cross <- function(object, chr, max.dist, marker.names = TRUE, horizonta
       cex <- dots$cex
     else
       cex <- par("cex")
-    chrpos <- seq(1, n.chr * 2, by = 2)
-    thelim <- range(chrpos) + c(-0.35, 1.35)
+    chrpos <- seq(1, n.chr * 3, by = 3)
+    thelim <- range(chrpos) + c(-1.6, 1.35)
     for(i in 1:n.chr) {
       mt[[i]] <- map[[i]]
       conv <- par("pin")[2]/maxlen    
@@ -671,62 +674,44 @@ link.map.cross <- function(object, chr, max.dist, marker.names = TRUE, horizonta
           }
         }
       }
-    maxlen <- max(unlist(lapply(mt, max))) 
+    maxlen <- max(unlist(lapply(mt, max)))
+    names(mt) <- names(map) 
   }
-  if (horizontal) {
-    plot(0, 0, type = "n", xlim = c(0, maxlen), ylim = rev(thelim), 
-         yaxs = "i", xlab = "Location (cM)", ylab = "Chromosome", 
-         yaxt = "n", ...) 
-    a <- par("usr")
-    for(i in 1:n.chr) {
-      if(marker.names) {
-        text(mt[[i]], chrpos[i] + 0.5, names(map[[i]]), 
-             srt = 90, adj = c(1, 0.5), ...)
-        segments(map[[i]], chrpos[i] + 0.25, map[[i]], chrpos[i] + 0.3)
-        segments(map[[i]], chrpos[i] + 0.3, mt[[i]], chrpos[i] + 0.4)
-        segments(mt[[i]], chrpos[i] + 0.40, mt[[i]], chrpos[i] + 0.45)
-      }
-      segments(min(map[[i]]), chrpos[i] - 0.02, max(map[[i]]), 
-               chrpos[i] - 0.02)
-      segments(min(map[[i]]), chrpos[i] + 0.02, max(map[[i]]), 
-               chrpos[i] + 0.02)
-      segments(map[[i]], chrpos[i] - 0.20, map[[i]], 
-               chrpos[i] + 0.20)
+  plot(0, 0, type = "n", ylim = c(maxlen, 0), xlim = thelim, 
+       xaxs = "i", ylab = "Location (cM)", xlab = "Chromosome",
+       axes = FALSE, ...)
+  axis(side = 2,  ylim = c(maxlen, 0))
+  pins <- par()$plt
+  for(i in 1:n.chr) {
+    if(marker.names) {       
+      text(chrpos[i] + 0.50, mt[[i]], names(map[[i]]), 
+           adj = c(0, 0.5), ...)
+      segments(chrpos[i] + 0.25, map[[i]], chrpos[i] + 0.3, map[[i]])
+      segments(chrpos[i] + 0.3, map[[i]], chrpos[i] + 0.4, mt[[i]])
+      segments(chrpos[i] + 0.40, mt[[i]], chrpos[i] + 0.45, mt[[i]])
     }
-    for (i in seq(along = chrpos)) axis(side = 2, 
-                      at = chrpos[i], labels = names(map)[i])
+    barl <- chrpos[i]- 0.03
+    barr <- chrpos[i]+ 0.03
+    segments(barl, min(map[[i]]), barl, max(map[[i]]), lwd = 1)
+    segments(barr, min(map[[i]]), barr, max(map[[i]]), lwd = 1)
+    segments(barl - 0.17, map[[i]], barr + 0.17, map[[i]])
+    # attempt to put curves at ends of chromosomes
+    xseq <- seq(barl, barr, length = 20) - chrpos[i]
+    yseq <- circ(xseq, xseq, ely = 1, elx = 0.07/maxlen)
+    yseq <- yseq - max(yseq)
+    lines(xseq + chrpos[i], min(map[[i]]) + yseq)
+    lines(xseq + chrpos[i], max(map[[i]]) - yseq)
   }
- else {
-    plot(0, 0, type = "n", ylim = c(maxlen, 0), xlim = thelim, 
-         xaxs = "i", ylab = "Location (cM)", xlab = "Chromosome",
-         axes = FALSE, ...)
-    axis(side = 2,  ylim = c(maxlen, 0))
-    for(i in 1:n.chr) {
-      if(marker.names) {       
-        text(chrpos[i] + 0.50, mt[[i]], names(map[[i]]), 
-             adj = c(0, 0.5), ...)
-        segments(chrpos[i] + 0.25, map[[i]], chrpos[i] + 0.3, map[[i]])
-        segments(chrpos[i] + 0.3, map[[i]], chrpos[i] + 0.4, mt[[i]])
-        segments(chrpos[i] + 0.40, mt[[i]], chrpos[i] + 0.45, mt[[i]])
-      }    
-      segments(chrpos[i]- 0.02, min(map[[i]]), chrpos[i] - 0.02, 
-               max(map[[i]]), lwd = 1)
-      segments(chrpos[i]+ 0.02, min(map[[i]]), chrpos[i] + 0.02, 
-               max(map[[i]]), lwd = 1)
-      segments(chrpos[i] - 0.20, map[[i]], chrpos[i] + 
-               0.20, map[[i]])   
-    }
-#    for (i in seq(along = chrpos))
-#      axis(side = 1, at = chrpos[i], labels = names(map)[i])
-    axis(side = 1, at = chrpos, labels = names(map))
-  }
- if(is.na(pmatch("main", names(dots))) & !as.logical(sys.parent())) 
-   title("Genetic Map")
- names(mt) <- names(map) 
- invisible(list(mt = mt, map = map, chrpos = chrpos))  
+  axis(side = 1, at = chrpos, labels = names(map), tick = tick)
+  if(is.na(pmatch("main", names(dots))) & !as.logical(sys.parent())) 
+    title("Genetic Map")
+  invisible(list(mt = mt, map = map, chrpos = chrpos))  
 }
 
-link.map.default <- function(object, parentData, chr, max.dist, marker.names = TRUE, qcol = rainbow(length(object)), mcol = "red", trait.labels = NULL, ...){
+circ <- function(x, y, shiftx = 0, shifty = 0, ely = 1, elx = 1)
+    ((x - shiftx)^2)/elx + ((y - shifty)^2)/ely
+
+link.map.default <- function(object, parentData, chr, max.dist, marker.names = TRUE, clist = list(qcol = rainbow(length(object)), mcol = "red", tcol = rainbow(length(object))), trait.labels = NULL, tick = FALSE, ...){
 
   old.par <- par(no.readonly = TRUE)
   par(mar = c(5, 4, 5, 2) + 0.1)
@@ -743,25 +728,36 @@ link.map.default <- function(object, parentData, chr, max.dist, marker.names = T
       stop("link.map method is only for list objects of class \"wgaim\"")
   sig.chr <- lapply(object, function(el) el$QTL$sig.chr)
   len <- lapply(sig.chr, length)
-  if(!is.null(trait.labels))
+  if(!is.null(trait.labels)) {
+    if(length(trait.labels) != length(object))
+      stop("Length of trait labels does not equal number of models specified.")
     trait <- rep(trait.labels, times = len)
+  }
   else { 
     trait <- unlist(lapply(object, function(el)
         rep(as.character(el$call$fixed[[2]]), length(el$QTL$sig.chr))))
-  }
+  } 
   dlist$QTL$sig.chr <- unlist(sig.chr) 
   dlist$QTL$sig.int <- unlist(lapply(object, function(el) el$QTL$sig.int))
-  attr(dlist, "trait") <- trait                       
   class(dlist) <- "wgaim"
-  if(length(qcol) != length(object)) {
+  if(is.null(clist$qcol))
+     clist$qcol <- rainbow(length(object))
+  if(length(clist$qcol) != length(object)) {
     warning("QTL colours not of the same length as the number of traits,\n Choosing \"qcol = rainbow(",length(object),")\".")
-    qcol <- rainbow(length(object))
+    clist$qcol <- rainbow(length(object))
   }
-  link.map(dlist, parentData, chr, max.dist, marker.names = marker.names, qcol = qcol, mcol = mcol, ...)
-  legend(x = par("usr")[2]/2, y = par("usr")[4]*2.2, unique(trait), fill = qcol, xjust = 0.5, horiz = TRUE, bty = "n")
+  if(is.null(clist$tcol))
+     clist$tcol <- clist$qcol
+  if(length(clist$tcol) != length(object)){
+    if(length(clist$tcol) != 1) {
+      warning("Inappropriate length for trait name colours, using QTL colours")
+      clist$tcol <- clist$qcol
+    }
+  }
+  link.map(dlist, parentData, chr, max.dist, marker.names = marker.names, clist = clist, trait.labels = trait, tick = tick, ...)
  }
 
-link.map.wgaim <- function(object, parentData, chr, max.dist, marker.names = TRUE, qcol = "light blue", mcol = "red", ...){   
+link.map.wgaim <- function(object, parentData, chr, max.dist, marker.names = TRUE, clist = list(qcol = "light blue", mcol = "red", tcol = "light blue"), trait.labels = NULL, tick = FALSE, ...){   
 
   dots <- list(...)
   if(missing(parentData))
@@ -770,27 +766,41 @@ link.map.wgaim <- function(object, parentData, chr, max.dist, marker.names = TRU
     stop("parentData is not of class \"cross\"")
   if(!length(wchr <- object$QTL$sig.chr)){
     warning("There are no significant QTL's. Plotting map only...")
-    link.map(parentData, chr, max.dist, marker.names = marker.names, horizontal = TRUE, ...)
+    link.map(parentData, chr, max.dist, marker.names = marker.names, tick = tick, ...)
     return(invisible())
   }
-  lmap <- link.map(parentData, chr, max.dist, marker.names = marker.names, ...)
+  if(is.null(clist$qcol))
+    clist$qcol <- "light blue"
+  if(is.null(clist$tcol))
+    clist$tcol <- clist$qcol
+  if(missing(chr))
+    chr <- unique(wchr)[order(unique(wchr))]
+  lmap <- link.map(parentData, chr, max.dist, marker.names = marker.names, tick = tick, ...)
   map <- lmap$map
   qtlm <- getQTL(object, parentData)
-  if(is.null(trait <- attr(object, "trait")))
+  if(is.null(trait <- trait.labels))
     trait <- rep(as.character(object$call$fixed[[2]]), length(wchr))
-  qtlm <- cbind(qtlm, as.numeric(factor(trait, levels = unique(trait))))
+  if(length(trait.labels) == 1)
+    trait <- rep(trait.labels, length(wchr))
+  qtrait <- unique(trait) 
+  qtlm <- cbind.data.frame(qtlm, trait = factor(trait, levels = unique(trait)))
+  qtlm[,2] <- as.numeric(as.character(qtlm[,2]))
+  qtlm[,4] <- as.numeric(as.character(qtlm[,4])) 
+  qtlList <- lapply(split(qtlm, wchr), function(el) el[order(el[,2]),])
+  qtlm <- do.call("rbind", qtlList)
+  wchr <- wchr[order(wchr)]
   if(!missing(chr)) {
     if(any(is.na(wh <- pmatch(wchr, chr, dup = TRUE)))){
       warning("Some QTL's exist outside chromosome(s) subset, Omitting QTL's....")
       qtlm <- qtlm[!is.na(wh),]
       wchr <- wchr[!is.na(wh)]
-    }
+    }  
   }
   if(!missing(max.dist)) {
-    rml  <- as.numeric(qtlm[,4]) > max.dist
+    rml  <- qtlm[,4] > max.dist
     if(any(rml)){
       warning("Some QTL regions outside maximum distance specified. Omitting QTL's....") 
-      qtlm <- matrix(qtlm[!rml,], nrow = length(rml[!rml]), byrow = FALSE)
+      qtlm <- qtlm[!rml,]
       wchr <- wchr[!rml]
     }
   }
@@ -803,38 +813,73 @@ link.map.wgaim <- function(object, parentData, chr, max.dist, marker.names = TRU
   if(is.null(dim(qtlm)))
     qtlm <- matrix(qtlm, nrow = 1, byrow = FALSE)
 
+  ## move trait names on map for multiple qtls
+
+  tlis <- list()
+  if(!is.na(pmatch("cex", names(dots))))
+    cex <- dots$cex
+  else
+    cex <- par("cex")
+  for(i in 1:n.chr){
+    conv <- par("pin")[2]/maxlen        
+    if(as.logical(length(ind <- asreml.grep(names(map)[i], wchr)))){
+      tlis[[i]] <- as.vector(qtlm[ind, 2] + qtlm[ind,4])/2
+      names(tlis[[i]]) <- as.character(qtlm[ind,5])
+      if(length(ind) > 1) {          
+          for(j in 1:(length(ind) - 1)){
+            ch <- tlis[[i]][j + 1]*conv - (tlis[[i]][j]*conv + 10*par("csi")*cex/9)
+            if(ch < 0){
+              temp <- tlis[[i]][j + 1]*conv + abs(ch)
+              tlis[[i]][j + 1] <- temp/conv       
+            }
+          }
+        }
+    }
+  }
   ## check duplication in marker names for multiple traits 
   
-  qtld <- cbind.data.frame(qtlm)[,1:4]
+  qtld <- qtlm[,1:4]
   nodup <- !duplicated(do.call("paste",qtld))
   qtls <- qtld[nodup,]
   whd <- pmatch(do.call("paste", qtld), do.call("paste", qtls), dup = TRUE)
-  dlis <- split(qtlm[,5], whd)
-  qtlm <- as.matrix(qtls)
+  dlis <- split(as.character(qtlm[,5]), whd)
+  qtlm <- qtls
   wchr <- wchr[nodup]
   for(i in 1:n.chr){
     if(as.logical(length(ind <- asreml.grep(names(map)[i], wchr)))){
        for(j in ind) {
         if(marker.names){ 
           wh <- mt[[i]][pmatch(c(as.character(qtlm[j,1]), as.character(qtlm[j,3])), names(map[[i]]))]
-          alis <- list(x = chrpos[i] + 0.50, y = wh, labels = names(wh), adj = c(0, 0.5), col = mcol)
+          alis <- list(x = chrpos[i] + 0.50, y = wh, labels = names(wh), adj = c(0, 0.5), col = clist$mcol)
           do.call("text", c(alis, dots))
         }
-        yv <- c(as.numeric(qtlm[j,2]), as.numeric(qtlm[j,4]))
+        yv <- c(qtlm[j,2],qtlm[j,4])
         yv <- c(yv, rev(yv))
+        dind <- dlis[[j]]
+        qcols <- clist$qcol[pmatch(dind, qtrait)]
+        qind <- 1:length(dind)
         if(length(dlis[[j]]) > 1) {
-          int <- seq(chrpos[i] - 0.20, chrpos[i] + 0.20, length = length(dlis[[j]]) + 1)
-          qcols <- qcol[as.numeric(dlis[[j]])]
-          for(k in 1:length(dlis[[j]])){ 
-            xv <- c(rep(int[k], 2), rep(int[k + 1], 2)) 
-            polygon(xv, y = yv, border = NA, col = qcol[k])
-          }
+            int <- seq(chrpos[i] - 0.20, chrpos[i] + 0.20, length = length(dind) + 1)
+            for(k in 1:length(dind)){ 
+              xv <- c(rep(int[k], 2), rep(int[k + 1], 2)) 
+              polygon(xv, y = yv, border = NA, col = qcols[k])
+          }                   
         }
         else {
-        xv <- c(rep(chrpos[i] - 0.20, 2), rep(chrpos[i] + 0.20, 2))       
-        polygon(xv, y = yv, border = NA, col = qcol)
+          xv <- c(rep(chrpos[i] - 0.20, 2), rep(chrpos[i] + 0.20, 2))       
+          polygon(xv, y = yv, border = NA, col = qcols)
       }
-      }   
+        segments(chrpos[i] - 0.25, yv[1], chrpos[i] - 0.25, yv[2])
+        segments(chrpos[i] - 0.25, sum(yv[1:2])/2, chrpos[i] - 0.3, sum(yv[1:2])/2)        
+        segments(chrpos[i] - 0.3, sum(yv[1:2])/2, chrpos[i] - 0.4,  tlis[[i]][qind])
+        segments(chrpos[i] - 0.4, tlis[[i]][qind], chrpos[i] - 0.45, tlis[[i]][qind])
+        if(length(clist$tcol) > 1)
+          tcols <- clist$tcol[pmatch(dind, qtrait)]
+        else
+          tcols <- clist$tcol
+        text(chrpos[i] - 0.5, tlis[[i]][qind], names(tlis[[i]][qind]), adj = c(1, 0.3), col = tcols, cex = cex)
+        tlis[[i]] <- tlis[[i]][-qind]
+      }
     }
     segments(chrpos[i] - 0.20, map[[i]], chrpos[i] + 
              0.20, map[[i]])
@@ -842,6 +887,7 @@ link.map.wgaim <- function(object, parentData, chr, max.dist, marker.names = TRU
   if(is.na(pmatch("main", names(dots))))
      title("Genetic Map with QTLs")
 }
+
 
 
 
