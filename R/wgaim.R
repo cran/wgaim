@@ -67,7 +67,7 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
   if(is.null(add.qtl$call$random))
     add.qtl$call$random <- as.formula(paste("~", "idv(grp('qtls'))", sep=""))    
   else
-    add.qtl$call$random <- as.formula(paste(deparse(add.qtl$call$random), "idv(grp('qtls'))", sep=" + "))                    
+    add.qtl$call$random <- as.formula(paste(deparse(add.qtl$call$random, width.cutoff = 500), "idv(grp('qtls'))", sep=" + "))                    
   if(is.null(add.qtl$call$group))
     add.qtl$call$group <- list("qtls" = cnt)
   else 
@@ -122,8 +122,17 @@ QTL model is returned and full details of the current working random QTL model c
         return(invisible(baseModel))
       }
       }
-      while(any(fwarn(baseModel)))
+      b <- 1
+      while(any(fwarn(baseModel))){
         baseModel <- update.asreml(baseModel)
+        b <- b + 1
+        if (b > attempts) {
+          message("Warning message:\nParameter(s) not converging: one or more parameters are unstable. Continuing with QTL analysis ....\n")
+          assign("asdata", asdata, envir = .GlobalEnv)
+          baseModel$QTL$qtlModel <- add.qtl
+          break
+        }
+      }
       cat("\nRandom Effects QTL Model Iteration (",i,"):\n")
       cat("=========================================\n")
       add.qtl <- eval(add.qtl$call)
@@ -142,8 +151,17 @@ QTL model is returned and full details of the current working random QTL model c
         return(invisible(baseModel))
       }
     }
-    while(any(fwarn(add.qtl)))
+    q <- 1
+    while(any(fwarn(add.qtl))) {
        add.qtl <- update.asreml(add.qtl)
+       q <- q + 1
+       if (q > attempts) {
+         message("Error message:\nParameter(s) not converging: one or more parameters are unstable. Continuing with QTL analysis ....\n")
+         assign("asdata", asdata, envir = .GlobalEnv)
+         add.qtl$QTL$qtlModel <- add.qtl
+         break                               
+       }
+     }
     if(2*(add.qtl$loglik - baseLogL) < qchisq(1-2*TypeI,1))
       break
     ## Find the most likely chromosome and then the most
@@ -235,6 +253,7 @@ summary.wgaim <- function(object, parentData, ...){
     qtlmat[,2:5] <- getQTL(object, parentData)
     qtlmat[,1] <- wchr
     qtlmat[,6:9] <- c(round(zc, 3), zr, round(2*(1 - pnorm(abs(zr))), 4),  round(0.5*log(exp(zr^2), base = 10), 4))
+    qtlmat <- qtlmat[order(qtlmat[,1]),]
     dimnames(qtlmat) <- list(rowlab = as.character(1:length(wchr)), collab)
     prmatrix(qtlmat, quote = FALSE, right = TRUE)
     invisible(as.data.frame(qtlmat))
