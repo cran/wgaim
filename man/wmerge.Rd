@@ -49,7 +49,7 @@ important design information) remains intact.
     argument "\code{by}"} 
 }
 \author{Julian Taylor, Simon Diffey, Ari Verbyla and Brian Cullis}
-\seealso{\code{\link{wgaim}}, \code{\link{read.interval}}}
+\seealso{\code{\link{wgaim}}, \code{\link{read.interval}}, \code{\link{cross2int}}}
 \examples{
 
 # read in data 

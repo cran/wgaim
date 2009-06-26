@@ -15,8 +15,6 @@
     \item{znconc}{Zinc concentration level of each plant} 
     }
  }
-\source{ 
-}
 \examples{
 
 data(zinc, package = "wgaim")

@@ -36,7 +36,7 @@ The \code{parentData} should contain a data structure "\code{full.data}"
 which consists of a genotypic and phenotypic information appropriately merged
 (see \code{wmerge}.)   
   
-As the Whole Genome Average Interval Mapping approach detects QTL's
+As the Whole Genome Average Interval Mapping approach detects QTL
 sequentially it may require many calls to \code{asreml}. For this reason
 the function may seem slow and users should be patient.
 
@@ -48,7 +48,7 @@ appear may be passed through from an asreml call and are outputted upon
 exit. These may be ignored as they are handled during the execution of
 the function.
 
-To avoid lexcial scoping problems the function also places a version of
+ To avoid lexcial scoping problems the function also places a version of
 the "\code{full.data}"  from \code{parentData} into a local data object called
 "\code{asdata}". This ensures that the final model may also be
 investigated using the methods and features of the \code{asreml}
@@ -59,11 +59,13 @@ package.
   object (see \code{asreml.object}) with the addition of components from
   the QTL detection listed below.
   
-  \item{QTL}{A list of components from the significant QTL's detected
+  \item{QTL}{A list of components from the significant QTL detected
     including a character vector of the significant chromosomes the
-    QTL's were detected in \code{sig.chr} and the significant intervals
+    QTL were detected in \code{sig.chr} and the significant intervals
     on each chromosome in \code{sig.int}. For exploratory purposes the
-    final random effects qtl model is also returned in the component \code{qtlModel}.}
+    final random effects qtl model is also returned in the component
+    \code{qtlModel}. There are also a number of diagnostic meausres that
+    can be found in \code{diag} that are used in conjunction with \code{tr.wgaim}}
 }
 \references{
  Verbyla, A. P., Cullis, B. R., Thompson, R (2007) The analysis of QTL

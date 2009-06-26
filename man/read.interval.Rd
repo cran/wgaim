@@ -9,11 +9,11 @@ estimates interval information appropriate for further analysis.
 }
 \usage{
 read.interval(format = c("csv", "csvr", "csvs", "csvsr", "mm",
-"qtx", "tlcart", "gary", "karl"), dir = getwd(), file, genfile, mapfile,
-phefile, chridfile, mnamesfile, pnamesfile, na.strings = c("-", "NA"),
-genotypes = c("A", "B"), estimate.map = TRUE, convertXdata = TRUE,
-missgeno = "MartinezCurnow", rem.mark = TRUE, id = "id",
-subset = NULL, \ldots)
+    "qtx", "tlcart", "gary", "karl"), dir = getwd(), file, genfile,
+    mapfile, phefile, chridfile, mnamesfile, pnamesfile, na.strings =
+    c("-", "NA"), genotypes = c("A", "B"), estimate.map = TRUE,
+    convertXdata = TRUE, missgeno = "MartinezCurnow", rem.mark = TRUE,
+    id = "id", subset = NULL, \ldots)
 }
 \arguments{
   \item{format}{see \code{read.cross}}
@@ -91,6 +91,10 @@ they are from.}
   A data.frame of phenotypic information with rows as individuals read
   in from \code{read.cross}. A copy of the column named by the "\code{id}" argument
   can be found here (see \code{read.cross})}
+} 
+\note{
+Users should be aware that this function will be deprecated in future
+releases of \pkg{wgaim}.
 }  
 \references{
   Martinez, O., Curnow. R. N. (1994) Missing markers when estimating
@@ -102,7 +106,7 @@ they are from.}
     Applied Genetics}, \bold{116}, 95-111.    
 }
 \author{Julian Taylor, Simon Diffey, Ari Verblya and Brian Cullis}
-\seealso{\code{\link[qtl]{read.cross}}}
+\seealso{\code{\link[qtl]{read.cross}}, \code{\link{cross2int}}}
 \examples{
 
 \dontrun{

@@ -1,25 +1,29 @@
 \name{summary.wgaim}
 \alias{summary.wgaim}
 \alias{print.wgaim}
+\alias{print.summary.wgaim}
 \title{Summary and print methods for the class "wgaim"}
 \description{
 Prints a summary of the "\code{wgaim}" object in a presentable format
 }
 \usage{
 \method{summary}{wgaim}(object, parentData, \ldots)
-
 \method{print}{wgaim}(x, parentData, \ldots)
+\method{print}{summary.wgaim}(x, \ldots)
 }
 \arguments{
   \item{object}{an object of class "\code{wgaim}"}
-  \item{x}{an object of class "\code{wgaim}"}
+  \item{x}{an object of class "\code{wgaim}" or "\code{summary.wgaim}"
+    (see Details)}
   \item{parentData}{A data structure of class "\code{cross}" containing
     the genotypic data as well as the phenotypic data}
   \item{\ldots}{further arguments passed to or from other methods}
 }
 \details{
-  It is important that the \code{parentData} is not missing as it
-  contains vital summary information about each of the QTL's detected.   
+  It is important that the \code{parentData} is not missing in
+  \code{summary.wgaim} or \code{print.wgaim} as it
+  contains vital summary information about each of the QTL's
+  detected. \code{print.summary.wgaim} is just the print method for \code{summary.wgaim}.   
 }
 \value{A summary of the QTL component of the "\code{wgaim}" object is
     printed to the screen. For each QTL detected, the

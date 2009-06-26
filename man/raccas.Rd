@@ -17,9 +17,6 @@
   a returned object from \code{read.interval}. See the aformentioned
   function for more details. 
   }
-\source{
- 
-}
 \examples{
 
 data(raccas, package = "wgaim")

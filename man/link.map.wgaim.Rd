@@ -7,9 +7,9 @@ marker names and highlights QTL's with their associated flanking markers
 obtained from a fit to \code{wgaim}.
 }
 \usage{
-\method{link.map}{wgaim}(object, parentData, chr, max.dist, marker.names = "markers",
-clist = list(qcol = "light blue", mcol = "red", tcol = "light blue"),
-trait.labels = NULL, tick = FALSE, \ldots)
+\method{link.map}{wgaim}(object, parentData, chr, max.dist, marker.names
+   = "markers", clist = list(qcol = "light blue", mcol = "red",
+   tcol = "light blue"), trait.labels = NULL, tick = FALSE, \ldots)
 }
 \arguments{
   \item{object}{object of class "\code{wgaim}"}
@@ -61,7 +61,8 @@ na.method.X = "include")
 
 # plot QTL intervals
 
-link.map(zn.qtl, raccasM, cex = 0.6, clist = list(mcol = "red"), col = "gray")
+link.map(zn.qtl, raccasM, cex = 0.6, clist = list(mcol = "red"),
+     col = "gray")
 
 }
 }

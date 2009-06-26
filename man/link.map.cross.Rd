@@ -8,7 +8,7 @@ marker names.
 }
 \usage{
 \method{link.map}{cross}(object, chr, max.dist, marker.names = "markers",
-tick = FALSE, squash = TRUE, \ldots)
+     tick = FALSE, squash = TRUE, \ldots)
 }
 \arguments{
   \item{object}{object of class "\code{cross}"}
@@ -54,7 +54,6 @@ desired result.
 \author{Julian Taylor}
 \seealso{\code{\link{link.map.wgaim}}}
 \examples{
-
 data(raccas, package = "wgaim")
 link.map(raccas, cex = 0.5) 
 

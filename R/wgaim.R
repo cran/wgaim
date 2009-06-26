@@ -86,8 +86,10 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
   gamma <- 0.1
   nochr <- nchr(parentData)
   nmark <- nmar(parentData) - 1
-  names(nmark) <- paste("Chr.", names(nmark), sep ="") 
-
+  names(nmark) <- paste("Chr.", names(nmark), sep ="")
+  dmat <- data.frame(L0 = 0, L1 = 0, Statistic = 0, Pvalue = 0)
+  zrl <- zcl <- list() 
+  
   ## initial QTL fit
 
   message("Searching for QTLs......")
@@ -124,6 +126,10 @@ QTL model is returned and full details of the current working random QTL model c
         return(invisible(baseModel))
       }
       }
+      zrat <- round(baseModel$coefficients$fixed/sqrt(baseModel$vcoeff$fixed*baseModel$sigma2), 2)
+      zind <- asreml.grep("XChr\\.", names(zrat))
+      zrl[[i - 1]] <- rev(zrat[zind])
+      zcl[[i - 1]] <- rev(baseModel$coefficients$fixed[zind])
       b <- 1
       while(any(fwarn(baseModel))){
         baseModel <- update.asreml(baseModel)
@@ -164,13 +170,16 @@ QTL model is returned and full details of the current working random QTL model c
          break                               
        }
      }
-    if(2*(add.qtl$loglik - baseLogL) < qchisq(1-2*TypeI,1))
+    stat <- 2*(add.qtl$loglik - baseLogL)
+    dmat[i,] <- c(baseLogL, add.qtl$loglik, stat, (1 - pchisq(stat, 1))/2)
+    if(stat < qchisq(1-2*TypeI,1))
       break
+    
     ## Find the most likely chromosome and then the most
     ## likely interval on that chromosome
     ## that contains a putative QTL.
 
-    gamma <- add.qtl$gammas["qtls"]
+    gamma <- add.qtl$gammas[asreml.grep("qtls", names(add.qtl$gammas))]
     sigma2 <- add.qtl$sigma2
 
     rnams <- names(add.qtl$coefficients$random)
@@ -203,19 +212,73 @@ QTL model is returned and full details of the current working random QTL model c
     baseModel$call$R.param <- baseModel$R.param    
     add.qtl$call$fixed <- baseModel$call$fixed
     add.qtl$call$G.param <- add.qtl$G.param
-    add.qtl$call$R.param <- add.qtl$R.param 
+    add.qtl$call$R.param <- add.qtl$R.param
     i <- i + 1
     update <- TRUE
-   }
+  }
   if(!is.null(wchr)) {
     baseModel$QTL$sig.chr <- substr(wchr, 5, nchar(wchr))
     baseModel$QTL$sig.int <- wint
+    baseModel$QTL$diag$dmat <- dmat
+    baseModel$QTL$diag$zrl <- zrl
+    baseModel$QTL$diag$zcl <- zcl
 }
   assign("asdata", asdata, envir = .GlobalEnv) 
   baseModel$QTL$qtlModel <- add.qtl
   class(baseModel) <- c("wgaim", "asreml")
   baseModel  
 }
+
+wgaimFind <- function(data = TRUE)
+{
+    db <- find("wgaim")
+    if (substring(db, 1, 5) == "file:") 
+      where <- substring(db[i], 6, nchar(db))
+    else if (substring(db, 1, 7) == "package") 
+      where <- system.file(package = "wgaim")
+    else if (db == ".GlobalEnv") 
+      where <- getwd()
+    else where[i] <- database.path(db)
+    if(data)
+      where <- paste(where, "/data", sep = "")
+    if(.Platform$OS.type == "windows")
+      where <- gsub("/", "\\\\", where)
+    where
+}    
+
+tr.wgaim <- function(object, iter = 1:length(object$QTL$sig.chr), diag.out = TRUE, ...){
+     dots <- list(...)
+     if(!is.na(pmatch("digits", names(dots))))
+       dig <- dots$digits
+     else
+       dig <- options()$digits
+     zrl <- object$QTL$diag$zrl
+     if(any(ret <- is.na(pmatch(iter, 1:length(zrl))))){
+      warning("\"iter\" values outside expected range .. using ones that are in iteration range")
+      iter <- iter[!ret]
+    }
+     pvals <- unlist(lapply(zrl, function(el)
+                           round(2*(1 - pnorm(abs(el))),dig)
+                           ))       
+     qtlmat <- matrix(NA, nrow = length(zrl), ncol = length(zrl))
+     qtlmat[lower.tri(qtlmat, diag = TRUE)] <- pvals
+     qnams <- paste(object$QTL$sig.chr, object$QTL$sig.int, sep = ".")                       
+     dimnames(qtlmat) <- list(paste("Iter", 1:length(zrl), sep = "."), qnams)
+     cat("\nIncremental QTL P-value Matrix.\n")
+     cat("===============================\n")
+     qtlmat[qtlmat < 0.001] <- "<0.001"
+     qtlmat[is.na(qtlmat)] <- ""
+     print.default(qtlmat[iter,1:iter[length(iter)]], quote = FALSE, right = TRUE, ...)
+     if(diag.out) {
+        cat("\nOutlier Detection Diagnostic.\n")
+        cat("=============================\n")
+        dmat <- round(as.matrix(object$QTL$diag$dmat), dig)
+        dimnames(dmat)[[1]] <-  paste("Iter", 1:(length(zrl) + 1), sep = ".")
+        dmat[,4][dmat[,4] < 0.001] <- "<0.001"
+        print.default(dmat, quote = FALSE, right = TRUE, ...)
+      }
+  }    
+
 
 print.wgaim <- function(x, parentData, ...){
   if(missing(parentData))
@@ -234,6 +297,34 @@ print.wgaim <- function(x, parentData, ...){
     }
   }
 }
+
+## summary.wgaim <- function(object, parentData, ...){
+##   if(missing(parentData))
+##     stop("parentData is a required argument")
+##   if(!inherits(parentData, "cross"))
+##     stop("parentData is not of class \"cross\"")
+##   if(is.null(object$QTL$sig.chr))
+##     cat("There are no significant putative QTL's\n")
+##   else {
+##     wchr <- object$QTL$sig.chr
+##     zrat <- round(object$coefficients$fixed/sqrt(object$vcoeff$fixed*object$sigma2), 2)
+##     znam <- names(zrat)
+##     zind <- asreml.grep("XChr\\.", znam)
+##     zr <- rev(zrat[zind])
+##     zc <- rev(object$coefficients$fixed[zind])
+##     zn <- znam[zind]
+##     zn <- substr(zn, 2, nchar(zn))
+##     collab <- c("Chromosome", "Left Marker", "dist(cM)", "Right Marker", "dist(cM)", "Size", "z.ratio", "Pr(z)", "LOD")   
+##     qtlmat <- matrix(ncol = 9, nrow = length(wchr))
+##     qtlmat[,2:5] <- getQTL(object, parentData)
+##     qtlmat[,1] <- wchr
+##     qtlmat[,6:9] <- c(round(zc, 3), zr, round(2*(1 - pnorm(abs(zr))), 4),  round(0.5*log(exp(zr^2), base = 10), 4))
+##     qtlmat <- matrix(qtlmat[order(qtlmat[,1]),], nrow = length(wchr))
+##     dimnames(qtlmat) <- list(rowlab = as.character(1:length(wchr)), collab)
+##     prmatrix(qtlmat, quote = FALSE, right = TRUE)
+##     invisible(as.data.frame(qtlmat))
+##   }
+## }
 
 summary.wgaim <- function(object, parentData, ...){
   if(missing(parentData))
@@ -257,12 +348,17 @@ summary.wgaim <- function(object, parentData, ...){
     qtlmat[,1] <- wchr
     qtlmat[,6:9] <- c(round(zc, 3), zr, round(2*(1 - pnorm(abs(zr))), 4),  round(0.5*log(exp(zr^2), base = 10), 4))
     qtlmat <- matrix(qtlmat[order(qtlmat[,1]),], nrow = length(wchr))
-    dimnames(qtlmat) <- list(rowlab = as.character(1:length(wchr)), collab)
-    prmatrix(qtlmat, quote = FALSE, right = TRUE)
-    invisible(as.data.frame(qtlmat))
+    dimnames(qtlmat) <- list(as.character(1:length(wchr)), collab)
+    class(qtlmat) <- "summary.wgaim"
+    qtlmat
   }
-}
+}  
 
+print.summary.wgaim <- function(x, ...){
+  x <- unclass(x)
+  print.default(x, quote = FALSE, right = TRUE, ...)
+}
+  
 getQTL <- function(object, parentData){
   wchr <- object$QTL$sig.chr
   wint <- object$QTL$sig.int
@@ -275,21 +371,112 @@ getQTL <- function(object, parentData){
  qtlm
 }
 
+## read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
+##    "qtx", "tlcart", "gary", "karl"), dir = getwd(), file, genfile, mapfile, 
+##     phefile, chridfile, mnamesfile, pnamesfile, na.strings = c("-", 
+##         "NA"), genotypes = c("A", "B"), estimate.map = TRUE, 
+##     convertXdata = TRUE, missgeno = "MartinezCurnow",
+##     rem.mark = TRUE, id = "id", subset = NULL, ...) {
+
+##   oldops <- options()
+##   options(warn = 1)
+##   on.exit(options(oldops))
+##   if(length(genotypes) > 2)
+##     stop("This uses a modified version of the read.cross() function from
+##   the qtl package. This strict modification only allows two genotypes \"A\" and \"B\"")
+##   fullgeno <- read.crossQ(format = format, dir, file = file, genfile, mapfile, phefile, chridfile,
+##    mnamesfile, pnamesfile, na.strings, genotypes = genotypes, convertXdata = convertXdata, estimate.map = estimate.map, ...)
+##   fullgeno <- drop.nullmarkers(fullgeno)
+##   if(!(id %in% names(fullgeno$pheno)))
+##     stop("The unique identifier for the genotypic rows, ", deparse(substitute(id)), ",cannot be found in genotypic data") 
+##   if(!is.null(subset))
+##     fullgeno <- subset(fullgeno, chr = subset)
+##   if(rem.mark) {
+##     tpheno <- fullgeno$pheno
+##     fullgeno <- fix.map(fullgeno, dir, file, id)
+##     fullgeno$pheno <- tpheno
+##   }
+##   lid <- as.character(fullgeno$pheno[[id]])
+##   fullgeno$geno <- lapply(fullgeno$geno, function(el, lid) {
+##     row.names(el$data) <- as.character(lid)
+##     el
+##   }, lid)
+##   chnam <- names(fullgeno$geno)
+##   n.mark <- lapply(fullgeno$geno, function(x) length(x$map))
+##   chnam.1 <- chnam[n.mark == 1]
+##   chnam.2 <- chnam[n.mark != 1]
+##   for (i in chnam.1) {
+##         fullgeno$geno[[i]]$dist <- 0
+##         fullgeno$geno[[i]]$theta <- 0
+##         fullgeno$geno[[i]]$E.lambda <- 1/2
+##         fullgeno$geno[[i]]$data[is.na(fullgeno$geno[[i]]$data)] <- 0
+##         fullgeno$geno[[i]]$argmax <- fullgeno$geno[[i]]$data
+##         for (j in 1:ncol(fullgeno$geno[[i]]$argmax)) {
+##             fullgeno$geno[[i]]$argmax[, j] <- as.numeric(sub(2,
+##                                                              -1, fullgeno$geno[[i]]$argmax[, j]))
+##         }
+##         fullgeno$geno[[i]]$intval <- as.matrix(fullgeno$geno[[i]]$argmax/2, ncol=1)
+##         dimnames(fullgeno$geno[[i]]$intval)[[2]] <- names(fullgeno$geno[[i]]$map)
+##       }
+##   for(i in chnam.2){
+##     fullgeno$geno[[i]]$dist <- diff(fullgeno$geno[[i]]$map)/100                                           
+##     fullgeno$geno[[i]]$theta <- 0.5*(1-exp(-2*fullgeno$geno[[i]]$dist))                                        
+##     fullgeno$geno[[i]]$E.lambda <- fullgeno$geno[[i]]$theta/(2*fullgeno$geno[[i]]$dist*(1-fullgeno$geno[[i]]$theta))                          
+##   }
+##   mtype <- c("Broman", "MartinezCurnow")
+##   if(is.na(type <- pmatch(missgeno, mtype)))
+##     stop("Missing marker type must be one of \"Broman\" or \"MartinezCurnow\". Partial matching is allowed.")
+##   missgeno <- mtype[type]  
+##   if(missgeno=="MartinezCurnow"){
+##     for(i in chnam.2){
+##       dtemp <- fullgeno$geno[[i]]$data
+##       for(j in 1:ncol(fullgeno$geno[[i]]$data))
+##         dtemp[,j] <-  as.numeric(sub(2,-1,fullgeno$geno[[i]]$data[,j]))
+##       fullgeno$geno[[i]]$argmax <- dtemp
+##     }
+##     for(p in 1:length(chnam.2))
+##       fullgeno$geno[[p]]$argmax <- miss.q(fullgeno$geno[[p]]$theta, fullgeno$geno[[p]]$argmax)
+##   }
+##   else {
+##     fullgeno <- argmax.geno(fullgeno)
+##     for(i in chnam.2){
+##       for(j in 1:ncol(fullgeno$geno[[i]]$argmax))
+##         fullgeno$geno[[i]]$argmax[,j] <- as.numeric(sub(2,-1,fullgeno$geno[[i]]$argmax[,j]))
+##       dimnames(fullgeno$geno[[i]]$argmax)[[1]] <- dimnames(fullgeno$geno[[1]]$data)[[1]]
+##     }    
+##   }
+##   for(i in chnam.2){
+##     lambda <- addiag(fullgeno$geno[[i]]$E.lambda,-1) + addiag(c(fullgeno$geno[[i]]$E.lambda,0),0) 
+##     lambda <- lambda[,-dim(lambda)[2]]
+##     fullgeno$geno[[i]]$intval <- fullgeno$geno[[i]]$argmax %*% lambda
+##     dimnames(fullgeno$geno[[i]]$intval)[[2]] <- names(fullgeno$geno[[i]]$theta)
+##   }         
+##   class(fullgeno) <- c(class(fullgeno), "interval")
+##   fullgeno
+## }
+
 read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
    "qtx", "tlcart", "gary", "karl"), dir = getwd(), file, genfile, mapfile, 
     phefile, chridfile, mnamesfile, pnamesfile, na.strings = c("-", 
         "NA"), genotypes = c("A", "B"), estimate.map = TRUE, 
     convertXdata = TRUE, missgeno = "MartinezCurnow",
     rem.mark = TRUE, id = "id", subset = NULL, ...) {
-
+  cat("Users should be aware that this function will be deprecated in future releases of \"wgaim\".\n") 
   oldops <- options()
   options(warn = 1)
   on.exit(options(oldops))
   if(length(genotypes) > 2)
     stop("This uses a modified version of the read.cross() function from
-  the qtl package. This strict modification only allows two genotypes \"A\" and \"B\"")
+  the qtl package. This strict modification only allows two genotypes, for example, \"A\" and \"B\"")
   fullgeno <- read.crossQ(format = format, dir, file = file, genfile, mapfile, phefile, chridfile,
    mnamesfile, pnamesfile, na.strings, genotypes = genotypes, convertXdata = convertXdata, estimate.map = estimate.map, ...)
+  cross2int(fullgeno = fullgeno, missgeno = missgeno, rem.mark = rem.mark, id = id, subset = subset)
+ } 
+
+cross2int <- function(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE, id = "id",
+                      subset = NULL){
+  if(!inherits(fullgeno, "bc"))
+    stop("This function is restricted to population containing only two genotypes.")
   fullgeno <- drop.nullmarkers(fullgeno)
   if(!(id %in% names(fullgeno$pheno)))
     stop("The unique identifier for the genotypic rows, ", deparse(substitute(id)), ",cannot be found in genotypic data") 
@@ -297,7 +484,7 @@ read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
     fullgeno <- subset(fullgeno, chr = subset)
   if(rem.mark) {
     tpheno <- fullgeno$pheno
-    fullgeno <- fix.map(fullgeno, dir, file, id)
+    fullgeno <- fix.map(fullgeno, getwd(), "dummy", id)
     fullgeno$pheno <- tpheno
   }
   lid <- as.character(fullgeno$pheno[[id]])
@@ -358,68 +545,6 @@ read.interval <- function(format = c("csv", "csvr", "csvs", "csvsr", "mm",
   class(fullgeno) <- c(class(fullgeno), "interval")
   fullgeno
 }
-
-## cross2int <- function(fullgeno, missgeno = c("Broman", "MartinezCurnow"),
-##     rem.mark = TRUE, id = "id", subset = NULL, ...){
-##   if(!(id %in% names(fullgeno$pheno)))
-##     stop("The unique identifier for the genotypic rows, ", deparse(substitute(id)), ",cannot be found in genotypic data") 
-##   if(!is.null(subset))
-##     fullgeno <- subset(fullgeno, chr = subset)
-##   if(rem.mark)
-##     fullgeno <- fix.map(fullgeno, dir, id)
-##   lid <- as.character(fullgeno$pheno[[id]])
-##   fullgeno$geno <- lapply(fullgeno$geno, function(el, lid) {
-##     row.names(el$data) <- as.character(lid)
-##     el
-##   }, lid)
-##   chnam <- names(fullgeno$geno)
-##   n.mark <- lapply(fullgeno$geno, function(x) length(x$map))
-##   chnam.1 <- chnam[n.mark == 1]
-##   chnam.2 <- chnam[n.mark != 1]
-##   for (i in chnam.1) {
-##         fullgeno$geno[[i]]$dist <- 0
-##         fullgeno$geno[[i]]$theta <- 0
-##         fullgeno$geno[[i]]$E.lambda <- 1/2
-##         fullgeno$geno[[i]]$data[is.na(fullgeno$geno[[i]]$data)] <- 0
-##         fullgeno$geno[[i]]$argmax <- fullgeno$geno[[i]]$data
-##         for (j in 1:ncol(fullgeno$geno[[i]]$argmax)) {
-##             fullgeno$geno[[i]]$argmax[, j] <- as.numeric(sub(2,
-##                                                              -1, fullgeno$geno[[i]]$argmax[, j]))
-##         }
-##         fullgeno$geno[[i]]$intval <- as.matrix(fullgeno$geno[[i]]$argmax/2, ncol=1)
-##         dimnames(fullgeno$geno[[i]]$intval)[[2]] <- names(fullgeno$geno[[i]]$map)
-##       }
-##   for(i in chnam.2){
-##     fullgeno$geno[[i]]$dist <- diff(fullgeno$geno[[i]]$map)/100                                           
-##     fullgeno$geno[[i]]$theta <- 0.5*(1-exp(-2*fullgeno$geno[[i]]$dist))                                        
-##     fullgeno$geno[[i]]$E.lambda <- fullgeno$geno[[i]]$theta/(2*fullgeno$geno[[i]]$dist*(1-fullgeno$geno[[i]]$theta))                          
-##   }
-##   if(missing(missgeno) | missgeno=="MartinezCurnow"){
-##     for(i in chnam.2){
-##       dtemp <- fullgeno$geno[[i]]$data
-##       for(j in 1:ncol(fullgeno$geno[[i]]$data))
-##         dtemp[,j] <-  as.numeric(sub(2,-1,fullgeno$geno[[i]]$data[,j]))
-##       fullgeno$geno[[i]]$argmax <- dtemp  
-##     }
-##     for(p in 1:length(chnam.2))
-##       fullgeno$geno[[p]]$argmax <- miss.q(fullgeno$geno[[p]]$theta, fullgeno$geno[[p]]$argmax)
-##   }
-##   else {
-##     fullgeno <- argmax.geno(fullgeno)
-##     for(i in chnam.2){
-##       for(j in 1:ncol(fullgeno$geno[[i]]$argmax)){
-##         fullgeno$geno[[i]]$argmax[,j] <- as.numeric(sub(2,-1,fullgeno$geno[[i]]$argmax[,j]))}
-##     }
-##   }
-##   for(i in chnam.2){
-##     lambda <- addiag(fullgeno$geno[[i]]$E.lambda,-1) + addiag(c(fullgeno$geno[[i]]$E.lambda,0),0) 
-##     lambda <- lambda[,-dim(lambda)[2]]
-##     fullgeno$geno[[i]]$intval <- fullgeno$geno[[i]]$argmax %*% lambda
-##     dimnames(fullgeno$geno[[i]]$intval)[[2]] <- names(fullgeno$geno[[i]]$theta)
-##   }         
-##   class(fullgeno) <- c(class(fullgeno), "interval")
-##   fullgeno
-## }                   
 
 wmerge <- function (geno, pheno, by = NULL, ...)
 {
@@ -553,7 +678,7 @@ read.crossQ <- function (format = c("csv", "csvr", "csvs", "csvsr", "mm",
     cross
 }
 
-fix.map <- function(full.data, dir, file, id){
+fix.map <- function(full.data, dir, filename, id){
     full.data <- est.rf(full.data)
     mymat <- full.data$rf
     mymat[!lower.tri(mymat)] <- NA     
@@ -571,7 +696,7 @@ fix.map <- function(full.data, dir, file, id){
     newdat <- do.call("rbind", lapply(newmap$geno, function(el) t(el$data)))
     newdat <- cbind.data.frame(row.names(newdat), rep(names(nmar(newmap)), times = nmar(newmap)), newdat)   
     names(newdat) <- c(id, "", as.character(newmap$pheno[,id]))
-    fsub <- paste(substring(file, 1, nchar(file) - 4), "NEW.csv", sep ="")
+    fsub <- paste(filename, ".csv", sep ="")
     cat("Creating new map",deparse(substitute(fsub)),"....\n\n")
     write.csv(newdat, paste(dir, fsub, sep="\\"), row.names=FALSE)
     # Read newmap back in.

@@ -7,9 +7,10 @@ marker names and highlights QTL's with their associated flanking markers
 for multiple traits obtained from a list of \code{wgaim} fits.
 }
 \usage{
-\method{link.map}{default}(object, parentData, chr, max.dist, marker.names = "markers", 
-    clist = list(qcol = rainbow(length(object)), mcol = "red", 
-        tcol = rainbow(length(object))), trait.labels = NULL, tick = FALSE, \ldots)
+\method{link.map}{default}(object, parentData, chr, max.dist, marker.names
+    = "markers", clist = list(qcol = rainbow(length(object)),
+    mcol = "red", tcol = rainbow(length(object))), trait.labels
+    = NULL, tick = FALSE, \ldots)
 }
 \arguments{
   \item{object}{a list object with elements inheriting the class "\code{wgaim}"}
