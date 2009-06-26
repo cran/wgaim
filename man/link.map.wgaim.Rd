@@ -7,7 +7,7 @@ marker names and highlights QTL's with their associated flanking markers
 obtained from a fit to \code{wgaim}.
 }
 \usage{
-\method{link.map}{wgaim}(object, parentData, chr, max.dist, marker.names = TRUE,
+\method{link.map}{wgaim}(object, parentData, chr, max.dist, marker.names = "markers",
 clist = list(qcol = "light blue", mcol = "red", tcol = "light blue"),
 trait.labels = NULL, tick = FALSE, \ldots)
 }
@@ -17,9 +17,10 @@ trait.labels = NULL, tick = FALSE, \ldots)
   \item{chr}{character string naming the subset of chromosomes to plot}
   \item{max.dist}{a numerical value in cM determining the distance the
     genetic map should be subsetted by}
-  \item{marker.names}{logical value. If \code{TRUE} then marker names
-    are plotted alongside each chromosome on the left. Defaults to
-    \code{TRUE}}
+   \item{marker.names}{a character string naming the type of marker
+    information to plot. If "\code{dist}" then distances names
+    plotted alongside each chromosome on the left. If "\code{markers}"
+    then marker names are plotted instead. Defaults to "\code{markers}".}
   \item{clist}{named list of colours used to highlight the QTL regions and
     their flanking markers. \code{qcol} is the color of the QTL
     regions. \code{mcol} is the color the flanking markers. \code{tcol}

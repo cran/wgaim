@@ -7,7 +7,7 @@ marker names and highlights QTL's with their associated flanking markers
 for multiple traits obtained from a list of \code{wgaim} fits.
 }
 \usage{
-\method{link.map}{default}(object, parentData, chr, max.dist, marker.names = TRUE, 
+\method{link.map}{default}(object, parentData, chr, max.dist, marker.names = "markers", 
     clist = list(qcol = rainbow(length(object)), mcol = "red", 
         tcol = rainbow(length(object))), trait.labels = NULL, tick = FALSE, \ldots)
 }
@@ -16,10 +16,11 @@ for multiple traits obtained from a list of \code{wgaim} fits.
   \item{parentData}{object of class "\code{cross}"}
   \item{chr}{character string naming the subset of chromosomes to plot}
   \item{max.dist}{a numerical value in cM determining the distance the
-    genetic map should be subsetted by}
-  \item{marker.names}{logical value. If \code{TRUE} then marker names
-    are plotted alongside each chromosome on the left. Defaults to
-    \code{TRUE}}
+    genetic map should be subsetted by}  
+  \item{marker.names}{a character string naming the type of marker
+    information to plot. If "\code{dist}" then distances names
+    plotted alongside each chromosome on the left. If "\code{markers}"
+    then marker names are plotted instead. Defaults to "\code{markers}".}
   \item{clist}{named list of colors used to highlight the QTL regions and
     their flanking markers. \code{qcol} is the colors of the QTL
     regions (defaults to \code{rainbow(n)} where \code{n} is the length
