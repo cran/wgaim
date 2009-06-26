@@ -5,7 +5,6 @@
 \alias{addiag}
 \alias{miss.q}
 \alias{read.crossQ}
-\alias{wgaimFind}
 \alias{wgaim.default}
 \title{Internal wgaim functions}
 \description{
@@ -21,7 +20,6 @@ read.crossQ(format = c("csv", "csvr", "csvs", "csvsr", "mm",
    "qtx", "tlcart", "gary", "karl"), dir, file, genfile, mapfile,
 phefile, chridfile, mnamesfile, pnamesfile, na.strings, genotypes,
 estimate.map, convertXdata, \ldots)
-wgaimFind(data = TRUE) 
 \method{wgaim}{default}(baseModel, \ldots)
 }
 \author{Julian Taylor, Simon Diffey, Ari Verbyla and Brian Cullis}

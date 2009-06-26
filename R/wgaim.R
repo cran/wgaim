@@ -50,13 +50,11 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
   }
 
   ## add ... to call
-
+  
   if (length(dlist) > 0) {
-    which <- !is.na(match(names(dlist), names(baseModel$control)))
-    for (z in names(dlist)[which]) baseModel$control[[z]] <- dlist[[z]]
     what <- !is.na(match(names(dlist), names(baseModel$call)))
     for (z in names(dlist)[what]) baseModel$call[[z]] <- dlist[[z]]
-    if (any(!(what | which))) {
+    if (any(!(what))) {
       baseModel$call <- c(as.list(baseModel$call), dlist[!what])
       baseModel$call <- as.call(baseModel$call)
    }
@@ -235,23 +233,6 @@ QTL model is returned and full details of the current working random QTL model c
   baseModel  
 }
 
-wgaimFind <- function(data = TRUE)
-{
-    db <- find("wgaim")
-    if (substring(db, 1, 5) == "file:") 
-      where <- substring(db, 6, nchar(db))
-    else if (substring(db, 1, 7) == "package") 
-      where <- system.file(package = "wgaim")
-    else if (db == ".GlobalEnv") 
-      where <- getwd()
-    else where <- database.path(db)
-    if(data)
-      where <- paste(where, "/data", sep = "")
-    if(.Platform$OS.type == "windows")
-      where <- gsub("/", "\\\\", where)
-    where
-}    
-
 tr.wgaim <- function(object, iter = 1:length(object$QTL$sig.chr), diag.out = TRUE, ...){
      dots <- list(...)
      if(!is.na(pmatch("digits", names(dots))))
@@ -374,10 +355,11 @@ out.stat <- function (object, parentData, int = TRUE, iter = NULL, chr = NULL,
                      duplicates.ok = TRUE)
     names(td)[1] <- "chr"
   }
-  panel.locs <- trellis.currentLayout()
+  panel.locs <- as.vector(trellis.currentLayout())
+  panel.locs <- panel.locs[panel.locs > 0]
   rows <- round(mod(as.vector(panel.locs), 5), 1)
   k <- 1
-  for (wh in as.vector(panel.locs)) {
+  for (wh in panel.locs) {
     trellis.focus("panel", row = rows[k], column = 1, highlight = TRUE)
     tq <- paste(td$chn[td$itn == wh], td$inn[td$itn == wh], 
                 sep = ".")
@@ -852,12 +834,16 @@ miss.q <- function(theta, chr){
     mk <- (1:m)[apply(chr, 1, function(el) any(is.na(el)))]
     for(k in mk){
       whk <- (1:n)[is.na(chr[k,])]
-      if((n %in% whk)){ 
-        if(length(whk) > 2)
-          whk <- c(whk[1], whk[length(whk)], whk[2:(length(whk) - 1)])
-        if(length(whk) == 2)
-          whk <- c(whk[length(whk)], whk[1])
+      if((n %in% whk)) {
+        if(length(whk) >= 2)
+          whk <- c(whk[length(whk)], whk[-length(whk)])
       }
+#        { 
+#        if(length(whk) > 2)
+#          whk <- c(whk[1], whk[length(whk)], whk[2:(length(whk) - 1)])
+#        if(length(whk) == 2)
+#          whk <- c(whk[length(whk)], whk[1])
+#      }
       for(i in whk){
         thetaR <- thetaL <- 0
         if(i == n){
