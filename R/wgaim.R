@@ -23,7 +23,7 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
   dlist <- match.call(expand.dots = FALSE)$...
   asdata <- parentData$full.data
   dnams <- names(asdata)
-  cnt <- asreml.grep("Chr\\.", dnams)
+  cnt <- grep("Chr\\.", dnams)
   asdata[,cnt] <- asdata[,cnt]/100
   state <- rep(1,length(cnt))
   names(state) <- names(asdata[,cnt])
@@ -69,7 +69,7 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
   if(is.null(add.qtl$call$random))
     add.qtl$call$random <- as.formula(paste("~", "idv(grp('qtls'))", sep=""))    
   else
-    add.qtl$call$random <- as.formula(paste(deparse(add.qtl$call$random, width.cutoff = 500), "idv(grp('qtls'))", sep=" + "))                    
+    add.qtl$call$random <- as.formula(paste("~ idv(grp('qtls'))", deparse(add.qtl$call$random[[2]], width.cutoff = 500), sep=" + "))                    
   if(is.null(add.qtl$call$group))
     add.qtl$call$group <- list("qtls" = cnt)
   else 
@@ -88,7 +88,9 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
   nmark <- nmar(parentData) - 1
   names(nmark) <- paste("Chr.", names(nmark), sep ="")
   dmat <- data.frame(L0 = 0, L1 = 0, Statistic = 0, Pvalue = 0)
-  zrl <- zcl <- list() 
+  zrl <- zcl <- list()
+  oint <- ochr <- list()
+  
   
   ## initial QTL fit
 
@@ -127,7 +129,7 @@ QTL model is returned and full details of the current working random QTL model c
       }
       }
       zrat <- round(baseModel$coefficients$fixed/sqrt(baseModel$vcoeff$fixed*baseModel$sigma2), 2)
-      zind <- asreml.grep("XChr\\.", names(zrat))
+      zind <- grep("XChr\\.", names(zrat))
       zrl[[i - 1]] <- rev(zrat[zind])
       zcl[[i - 1]] <- rev(baseModel$coefficients$fixed[zind])
       b <- 1
@@ -179,25 +181,27 @@ QTL model is returned and full details of the current working random QTL model c
     ## likely interval on that chromosome
     ## that contains a putative QTL.
 
-    gamma <- add.qtl$gammas[asreml.grep("qtls", names(add.qtl$gammas))]
+    gamma <- add.qtl$gammas[grep("qtls", names(add.qtl$gammas))]
     sigma2 <- add.qtl$sigma2
 
     rnams <- names(add.qtl$coefficients$random)
-    grp <- asreml.grep("qtls", rnams)
+    grp <- grep("qtls", rnams)
     bnams <-  rnams[grp]
     blups <- add.qtl$coefficients$random[grp]
     blups[!as.logical(state)] <- 0
     pevar <- sigma2*add.qtl$vcoeff$random[grp]
     varu <- sigma2*gamma - pevar
-    ntj2 <- blups^2/varu
+    oint[[i]] <- ntj2 <- blups^2/varu
     nsumtj2 <- c()
     for(c in 1:nochr){
-      wh.m <- asreml.grep(names(nmark)[c], bnams)
+      wh.m <- grep(names(nmark)[c], bnams)
       nsumtj2[c] <- sum(blups[wh.m]^2)/sum(varu[wh.m])
     }
+    names(nsumtj2) <- names(nmark)
+    ochr[[i]] <- nsumtj2
     chind <- (1:nochr)[nsumtj2 == max(nsumtj2)]
     wchr[i] <- names(nmark)[chind]
-    chri <- ntj2[asreml.grep(wchr[i], bnams)]
+    chri <- ntj2[grep(wchr[i], bnams)]
     wint[i] <- (1:length(chri))[chri == max(chri)]
     nint <- names(chri)[wint[i]]
     qtl.fix[i] <- substr(nint, 6, nchar(nint))
@@ -222,6 +226,8 @@ QTL model is returned and full details of the current working random QTL model c
     baseModel$QTL$diag$dmat <- dmat
     baseModel$QTL$diag$zrl <- zrl
     baseModel$QTL$diag$zcl <- zcl
+    baseModel$QTL$diag$ochr <- ochr
+    baseModel$QTL$diag$oint <- oint
 }
   assign("asdata", asdata, envir = .GlobalEnv) 
   baseModel$QTL$qtlModel <- add.qtl
@@ -233,12 +239,12 @@ wgaimFind <- function(data = TRUE)
 {
     db <- find("wgaim")
     if (substring(db, 1, 5) == "file:") 
-      where <- substring(db[i], 6, nchar(db))
+      where <- substring(db, 6, nchar(db))
     else if (substring(db, 1, 7) == "package") 
       where <- system.file(package = "wgaim")
     else if (db == ".GlobalEnv") 
       where <- getwd()
-    else where[i] <- database.path(db)
+    else where <- database.path(db)
     if(data)
       where <- paste(where, "/data", sep = "")
     if(.Platform$OS.type == "windows")
@@ -277,8 +283,115 @@ tr.wgaim <- function(object, iter = 1:length(object$QTL$sig.chr), diag.out = TRU
         dmat[,4][dmat[,4] < 0.001] <- "<0.001"
         print.default(dmat, quote = FALSE, right = TRUE, ...)
       }
-  }    
+  }
 
+out.stat <- function (object, parentData, int = TRUE, iter = NULL, chr = NULL, 
+            ...) 
+{
+  mod <- function(x, num) {
+    x <- x/num
+    val <- num * (x - floor(x))
+    val[val == 0] <- num
+    val
+  }
+  dots <- list(...)
+  cex <- dots$cex
+  sc <- object$QTL$sig.chr
+  si <- object$QTL$sig.int
+  qtl <- paste(sc, si, sep = ".")
+  dist <- lapply(parentData$geno, function(el) el$dist)
+  ln <- length(sc)
+  if (is.null(sc)) 
+    stop("There are no outlier statistics to plot.")
+  ochr <- object$QTL$diag$ochr
+  oint <- object$QTL$diag$oint
+  cnam <- names(ochr[[1]])
+  cnam <- gsub("Chr.", "", cnam)
+  inam <- names(oint[[1]])
+  inam <- strsplit(gsub("qtls_Chr.", "", inam), "\\.")
+  chn <- unlist(lapply(inam, function(el) el[1]))
+  inn <- unlist(lapply(inam, function(el) el[2]))
+  if (!is.null(iter)) {
+    if (is.numeric(iter)) 
+      iter <- as.integer(iter)
+    if (any(iter > ln)) 
+      stop("\"iter\" is greater than the number of QTL found in the analysis.")
+    oint <- oint[iter]
+    ochr <- ochr[iter]
+    ln <- length(iter)
+  }
+  else iter <- 1:ln
+  oint <- unlist(oint)
+  dint <- cbind.data.frame(int = oint, chn = rep(chn, length(iter)), 
+                           inn = rep(inn, length(iter)))
+  if (!int) 
+    chr <- NULL
+  if (!is.null(chr)) {
+    dint <- dint[as.character(dint$chn) %in% chr, ]
+    dist <- unlist(dist[chr])
+  }
+  else dist <- unlist(dist)
+  labs <- unique(paste(dint$chn, ".", dint$inn, sep = ""))
+  dist <- cumsum(dist) - dist/2
+  dint$dist <- rep(dist, length(iter))
+  dint$itn <- rep(1:length(iter), each = length(labs))
+  its <- paste("Iteration: ", rep(iter, each = length(labs)), 
+               sep = "")
+  dint$its <- factor(its, levels = unique(its))
+  dint$step <- rep(1:length(labs), length(iter))
+  qtln <- paste(qtl[iter], unique(dint$itn), sep = ":")
+  td <- dint[paste(paste(dint$chn, dint$inn, sep = "."), dint$itn, 
+                   sep = ":") %in% qtln, ]
+  prow <- length(unique(dint$its))
+  if (prow > 5) 
+    prow <- 5
+  if (int) {
+    slabs <- strsplit(labs, "\\.")
+    clabs <- unlist(lapply(slabs, function(el) el[1]))
+    tabc <- table(clabs)
+    cumc <- c(1, cumsum(tabc) + 1)
+    labs[-cumc] <- " "
+    labs <- as.character(labs)
+    print(xyplot(int ~ dist | its, type = "l", data = dint, 
+                 groups = chn, panel = panel.superpose,
+                 panel.groups = function(x, y, ...) {
+                   panel.xyplot(x, y, ...)
+                 }, ylab = "outlier statistic", scales = list(x = list(labels = labs, 
+                 rot = 45, at = unique(dist), cex = 0.6)), xlab = "Interval", 
+                 layout = c(1, prow), ...))
+  }
+  else {
+    dups <- !duplicated(paste(dint[, "chn"], dint[, c("its")], 
+                              sep = "."))
+    dchr <- dint[dups, ] 
+    dchr$int <- unlist(ochr)
+    names(dchr)[1] <- "chr"
+    bc <- print(barchart(chr ~ chn | its, data = dchr, ylab = "outlier statistic", 
+                   xlab = "Chromosome", layout = c(1, prow), ...))
+    wchr <- dchr$chr[paste(dchr$chn, dchr$itn, sep = ":") %in% paste(td$chn, td$itn, sep = ":")]
+    td$int <- wchr
+    td$whc <- pmatch(td$chn, as.character(unique(dchr$chn)), 
+                     duplicates.ok = TRUE)
+    names(td)[1] <- "chr"
+  }
+  panel.locs <- trellis.currentLayout()
+  rows <- round(mod(as.vector(panel.locs), 5), 1)
+  k <- 1
+  for (wh in as.vector(panel.locs)) {
+    trellis.focus("panel", row = rows[k], column = 1, highlight = TRUE)
+    tq <- paste(td$chn[td$itn == wh], td$inn[td$itn == wh], 
+                sep = ".")
+    if (int) 
+      panel.text(td$dist[td$itn == wh], td$int[td$itn == 
+                           wh], label = tq, col = 1, cex = cex)
+    else {
+      lims <- bc$y.limits[2] - bc$y.limits[1]
+      panel.text(td$whc[td$itn == wh], td$chr[td$itn == 
+                          wh] + 0.1 * lims, label = tq, col = 1, cex = cex)
+    }
+    k <- k + 1
+  }
+}
 
 print.wgaim <- function(x, parentData, ...){
   if(missing(parentData))
@@ -326,7 +439,7 @@ print.wgaim <- function(x, parentData, ...){
 ##   }
 ## }
 
-summary.wgaim <- function(object, parentData, ...){
+summary.wgaim <- function(object, parentData, LOD = TRUE, ...){
   if(missing(parentData))
     stop("parentData is a required argument")
   if(!inherits(parentData, "cross"))
@@ -337,7 +450,7 @@ summary.wgaim <- function(object, parentData, ...){
     wchr <- object$QTL$sig.chr
     zrat <- round(object$coefficients$fixed/sqrt(object$vcoeff$fixed*object$sigma2), 2)
     znam <- names(zrat)
-    zind <- asreml.grep("XChr\\.", znam)
+    zind <- grep("X.", znam)
     zr <- rev(zrat[zind])
     zc <- rev(object$coefficients$fixed[zind])
     zn <- znam[zind]
@@ -347,6 +460,10 @@ summary.wgaim <- function(object, parentData, ...){
     qtlmat[,2:5] <- getQTL(object, parentData)
     qtlmat[,1] <- wchr
     qtlmat[,6:8] <- c(round(zc, 3), zr, round(2*(1 - pnorm(abs(zr))), 4))
+    if(LOD) {
+      qtlmat <- cbind(qtlmat, round(0.5*log(exp(zr^2), base = 10), 4))
+      collab <- c(collab, "LOD")
+    }
     qtlmat <- matrix(qtlmat[order(qtlmat[,1]),], nrow = length(wchr))
     dimnames(qtlmat) <- list(as.character(1:length(wchr)), collab)
     class(qtlmat) <- "summary.wgaim"
@@ -980,7 +1097,7 @@ link.map.wgaim <- function(object, parentData, chr, max.dist, marker.names = "ma
     cex <- par("cex")
   for(i in 1:n.chr){
     conv <- par("pin")[2]/maxlen        
-    if(as.logical(length(ind <- asreml.grep(names(map)[i], wchr)))){
+    if(as.logical(length(ind <- grep(names(map)[i], wchr)))){
       tlis[[i]] <- as.vector(qtlm[ind, 2] + qtlm[ind,4])/2
       names(tlis[[i]]) <- as.character(qtlm[ind,5])
       if(length(ind) > 1) {          
@@ -1004,7 +1121,7 @@ link.map.wgaim <- function(object, parentData, chr, max.dist, marker.names = "ma
   qtlm <- qtls
   wchr <- wchr[nodup]
   for(i in 1:n.chr){
-    if(as.logical(length(ind <- asreml.grep(names(map)[i], wchr)))){
+    if(as.logical(length(ind <- grep(names(map)[i], wchr)))){
        for(j in ind) {
         if(!is.null(marker.names)){
           wh <- mt[[i]][pmatch(c(as.character(qtlm[j,1]), as.character(qtlm[j,3])), names(map[[i]]))]

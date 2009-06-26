@@ -6,7 +6,7 @@
 }
 \usage{
 \method{tr}{wgaim}(object, iter = 1:length(object$QTL$sig.chr),
-      diag.out = TRUE, ...)
+      diag.out = TRUE, \ldots)
 }
 \arguments{
   \item{object}{an object of class "\code{wgaim}"}

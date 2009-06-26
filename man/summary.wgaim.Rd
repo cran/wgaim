@@ -7,7 +7,7 @@
 Prints a summary of the "\code{wgaim}" object in a presentable format
 }
 \usage{
-\method{summary}{wgaim}(object, parentData, \ldots)
+\method{summary}{wgaim}(object, parentData, LOD = TRUE, \ldots)
 \method{print}{wgaim}(x, parentData, \ldots)
 \method{print}{summary.wgaim}(x, \ldots)
 }
@@ -17,6 +17,7 @@ Prints a summary of the "\code{wgaim}" object in a presentable format
     (see Details)}
   \item{parentData}{A data structure of class "\code{cross}" containing
     the genotypic data as well as the phenotypic data}
+  \item{LOD}{Calculate LOD scores for QTL, defaults to \code{TRUE}}
   \item{\ldots}{further arguments passed to or from other methods}
 }
 \details{
