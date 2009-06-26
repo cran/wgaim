@@ -101,6 +101,10 @@ releases of \pkg{wgaim}.
   quantitative trait loci using regression mapping. \emph{Heredity},
   \bold{73}, 198-206.
 
+  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+  Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+
   Verbyla, A. P., Cullis, B. R., Thompson, R (2007) The analysis of QTL
   by simultaneous use of the full linkage map. \emph{Theoretical And
     Applied Genetics}, \bold{116}, 95-111.    
@@ -113,12 +117,13 @@ releases of \pkg{wgaim}.
 # read in linkage map from a rotated .CSV file with "id" as the
 # identifier for each unique row
 
-racca <- read.interval("csvr", file="raccasgroups.csv", genotypes=c("A","B"),
-missgeno="MartinezCurnow", id = "id", na.strings = c("-", "NA"))
+wgpath <- system.file("extdata", package = "wgaim")
+raccas <- read.interval("csvr", file="raccas.csv", genotypes=c("AA","BB"),
+missgeno="MartinezCurnow", id = "id", na.strings = c("-", "NA"), dir = wgpath)
 
 # plot linkage map
 
-link.map(racca, cex = 0.5)
+link.map(raccas, cex = 0.5)
 }
 }
 \keyword{regression}

@@ -48,6 +48,11 @@ important design information) remains intact.
     with the phenotypic data using the matching column named by the
     argument "\code{by}"} 
 }
+\references{
+  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+  Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+}
 \author{Julian Taylor, Simon Diffey, Ari Verbyla and Brian Cullis}
 \seealso{\code{\link{wgaim}}, \code{\link{read.interval}}, \code{\link{cross2int}}}
 \examples{

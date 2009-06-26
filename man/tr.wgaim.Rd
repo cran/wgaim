@@ -26,6 +26,11 @@ TRUE} then a matrix with rows consisting of the likelihood with
 genetic variance, the likelihood without genetic variance (NULL model),
 the statistic and the p-value for the statistic.    
  }
+\references{
+  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+  Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+}
 \author{Julian Taylor}
 \seealso{\code{\link{wgaim}}, \code{\link{read.interval}}}
 \examples{

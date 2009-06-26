@@ -49,6 +49,11 @@ argument that will be passed to the other markers.
 \value{The genetic linkage map is plotted with shaded QTL regions and
   highlighted flanking markers.
 }
+\references{
+  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+  Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+}
 \author{Julian Taylor}
 \seealso{\code{\link{link.map.cross}}, \code{\link{wgaim}}}
 \examples{

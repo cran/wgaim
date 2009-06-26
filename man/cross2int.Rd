@@ -65,9 +65,13 @@ they are from.}
   quantitative trait loci using regression mapping. \emph{Heredity},
   \bold{73}, 198-206.
 
+  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+  Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+
   Verbyla, A. P., Cullis, B. R., Thompson, R (2007) The analysis of QTL
   by simultaneous use of the full linkage map. \emph{Theoretical And
-    Applied Genetics}, \bold{116}, 95-111.    
+    Applied Genetics}, \bold{116}, 95-111.
 }
 \author{Julian Taylor, Simon Diffey, Ari Verblya and Brian Cullis}
 \seealso{\code{\link[qtl]{read.cross}}, \code{link{read.interval}}}
@@ -77,9 +81,8 @@ they are from.}
 # read in linkage map from a rotated .CSV file with "id" as the
 # identifier for each unique row
 
-wgpath <- paste(Sys.getenv("R_HOME"), "\\library\\wgaim\\data",
-+ sep = "")
-racca <- read.cross("csvr", file="raccas.csv", genotypes=c("A","B"),
+wgpath <- system.file("extdata", package = "wgaim")
+racca <- read.cross("csvr", file="raccas.csv", genotypes=c("AA","AB"),
 na.strings = c("-", "NA"), dir = wgpath)
 raccas <- cross2int(racca, missgeno="MartinezCurnow", id = "id")
 

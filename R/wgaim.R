@@ -40,7 +40,7 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
   if(length(diff[!is.na(diff)]) > 1)
     stop("Phenotypic parentData is not in same order as baseModel data.\n Try reordering the phenotypic parentData apppropriately\n")
   
-  baseModel$call$data <- quote(asdata)
+  baseModel$call$data <- asdata
 
   ## Check base model characteristics 
   
@@ -121,7 +121,6 @@ wgaim.asreml <- function(baseModel, parentData, TypeI = 0.05, attempts = 5, trac
         message("Error message:\nLikelihood not converging or one or more parameters are unstable,
 try increasing the number of attempts or change the model. For diagnostic purposes the current fixed
 QTL model is returned and full details of the current working random QTL model can be found in ..$QTL")
-        assign("asdata", asdata, envir = .GlobalEnv) 
         baseModel$QTL$qtlModel <- add.qtl        
         return(invisible(baseModel))
       }
@@ -136,7 +135,6 @@ QTL model is returned and full details of the current working random QTL model c
         b <- b + 1
         if (b > attempts) {
           message("Warning message:\nParameter(s) not converging: one or more parameters are unstable. Continuing with QTL analysis ....\n")
-          assign("asdata", asdata, envir = .GlobalEnv)
           baseModel$QTL$qtlModel <- add.qtl
           break
         }
@@ -154,7 +152,6 @@ QTL model is returned and full details of the current working random QTL model c
         message("Error message:\nLikelihood not converging or one or more parameters are unstable,
 try increasing the number of attempts or change the model.  For diagnostic purposes the current fixed
 QTL model is returned and full details of the current working random QTL model can be found in ..$QTL")
-        assign("asdata", asdata, envir = .GlobalEnv) 
         baseModel$QTL$qtlModel <- add.qtl
         return(invisible(baseModel))
       }
@@ -165,7 +162,6 @@ QTL model is returned and full details of the current working random QTL model c
        q <- q + 1
        if (q > attempts) {
          message("Error message:\nParameter(s) not converging: one or more parameters are unstable. Continuing with QTL analysis ....\n")
-         assign("asdata", asdata, envir = .GlobalEnv)
          add.qtl$QTL$qtlModel <- add.qtl
          break                               
        }
@@ -207,8 +203,8 @@ QTL model is returned and full details of the current working random QTL model c
     my.name <- paste("X",qtl.fix[i],sep="")
     message("Found QTL on chromosome ", wchr[i]," in interval ", wint[i])
     asdata[my.name] <- asdata[qtl.fix[i]]*100
-    baseModel$call$data <- quote(asdata)
-    add.qtl$call$data <- quote(asdata)
+    baseModel$call$data <- asdata
+    add.qtl$call$data <- asdata
     baseModel$call$fixed <- as.formula(paste(deparse(baseModel$call$fixed, width.cutoff = 500), my.name, sep = " + "))
     baseModel$call$G.param <- baseModel$G.param
     baseModel$call$R.param <- baseModel$R.param    
@@ -227,7 +223,6 @@ QTL model is returned and full details of the current working random QTL model c
     baseModel$QTL$diag$ochr <- ochr
     baseModel$QTL$diag$oint <- oint
 }
-  assign("asdata", asdata, envir = .GlobalEnv) 
   baseModel$QTL$qtlModel <- add.qtl
   class(baseModel) <- c("wgaim", "asreml")
   baseModel  

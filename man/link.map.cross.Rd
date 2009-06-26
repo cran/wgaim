@@ -51,6 +51,11 @@ desired result.
   \item{chrpos}{The numerical position of the chromosomes on the
     plotting region} 
 }
+\references{
+  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+  Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+}
 \author{Julian Taylor}
 \seealso{\code{\link{link.map.wgaim}}}
 \examples{

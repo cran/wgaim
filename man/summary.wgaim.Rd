@@ -33,10 +33,14 @@ Prints a summary of the "\code{wgaim}" object in a presentable format
     score. \code{print.wgaim} provides a narrative brief of the QTL's detected.  
 }
 \references{
+  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+  Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+  
   Verbyla, A. P., Cullis, B. R., Thompson, R (2007) The analysis of QTL
   by simultaneous use of the full linkage map. \emph{Theoretical And
-    Applied Genetics}, \bold{116}, 195-211.
-}
+    Applied Genetics}, \bold{116}, 195-211. 
+  }
 \author{Julian Taylor, Simon Diffey, Ari Verbyla and Brian Cullis}
 \seealso{\code{\link{wgaim.asreml}}}
 \examples{

@@ -37,6 +37,11 @@ appropriate positions in each panel.
 }
 \value{The outlier statistics are plotted in a trellis panel plot. 
 }
+\references{
+  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+  Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+}
 \author{Julian Taylor}
 \seealso{\code{\link{tr.wgaim}}, \code{\link{wgaim}}}
 \examples{

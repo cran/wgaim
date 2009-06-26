@@ -2,7 +2,7 @@ Package: wgaim
 Type: Package
 Title: Whole Genome Average Interval Mapping for QTL detection using
         mixed models
-Version: 0.99-4.2
+Version: 0.99-4.3
 Date: 2009-06-26
 Author: Julian Taylor <julian.taylor@csiro.au>, Simon Diffey
         <simon.diffey@dpi.nsw.gov.au>, Ari Verbyla
@@ -15,6 +15,6 @@ Description: This package integrates sophisticated mixed modelling
         methods with a whole genome approach to detecting significant
         QTL's in linkage maps.
 License: GPL (>= 2)
-Packaged: 2011-04-04 05:37:03 UTC; tay333
+Packaged: 2011-04-05 01:59:43 UTC; tay333
 Repository: CRAN
-Date/Publication: 2011-04-04 07:40:04
+Date/Publication: 2011-04-05 07:15:15

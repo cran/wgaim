@@ -45,10 +45,12 @@ Modelling of the QTL's is achieved using the functions
 base model. As the WGAIM method requires iterative fitting of
 \code{asreml} models users should be patient for results. For
 convenience the default tracing of results from the asreml models is
-outputted to a file for further inspection. Diagnostics of the
-likelihood ratio test performed for each forward step can be displayed
-using \code{tr.wgaim}. The function also displays an incremental p-value
-matrix of the QTL ascertained at each forward step of the algorithm. 
+outputted to a file for further inspection. For diagnostic purposes, the
+outlier statistics from each iteration can be viewed using
+\code{out.stat}. Diagnostics of the likelihood ratio test performed for
+each forward step can be displayed using \code{tr.wgaim}. The function
+also displays an incremental p-value matrix of the QTL ascertained at
+each forward step of the algorithm.   
 
 Summary and print methods are available for the returned "\code{wgaim}"
 object and provide users with a detailed report on the QTL, their
@@ -62,6 +64,10 @@ QTL regions and highlighted flanking markers.
   Maintainer: Julian Taylor <julian.taylor@csiro.au>
 }
 \references{
+ Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+ Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+ Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+  
  Verbyla, A. P., Cullis, B. R., Thompson, R (2007) The analysis of QTL
  by simultaneous use of the full linkage map. \emph{Theoretical And
     Applied Genetics}, \bold{116}, 95-111.

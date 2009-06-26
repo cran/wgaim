@@ -47,12 +47,6 @@ still appear on screen during this process. Note some warnings that
 appear may be passed through from an asreml call and are outputted upon
 exit. These may be ignored as they are handled during the execution of
 the function.
-
- To avoid lexcial scoping problems the function also places a version of
-the "\code{full.data}"  from \code{parentData} into a local data object called
-"\code{asdata}". This ensures that the final model may also be
-investigated using the methods and features of the \code{asreml}
-package.   
 }
 \value{An object of class "\code{wgaim}" which also inherits the class
   "\code{asreml}" by default. The object returned is actually an \code{asreml}
@@ -65,9 +59,14 @@ package.
     on each chromosome in \code{sig.int}. For exploratory purposes the
     final random effects qtl model is also returned in the component
     \code{qtlModel}. There are also a number of diagnostic meausres that
-    can be found in \code{diag} that are used in conjunction with \code{tr.wgaim}}
-}
+    can be found in \code{diag} that are used in conjunction with
+    \code{tr.wgaim} and \code{out.stat}.}
+ } 
 \references{
+ Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+ Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+ Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+  
  Verbyla, A. P., Cullis, B. R., Thompson, R (2007) The analysis of QTL
  by simultaneous use of the full linkage map. \emph{Theoretical And
     Applied Genetics}, \bold{116}, 95-111.
