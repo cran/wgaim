@@ -57,8 +57,9 @@ important design information) remains intact.
 data(zinc, package = "wgaim")
 data(raccas, package = "wgaim")
 
-# subset linkage map and merge genotypic with phenotypic
+# convert and subset linkage map then merge genotypic with phenotypic
 
+raccas <- cross2int(raccas,  missgeno="Martinez", id = "id", rem.mark= TRUE) 
 raccasS <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
 raccasM <- wmerge(raccasS, zinc, by = "id")
 

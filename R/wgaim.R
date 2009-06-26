@@ -342,11 +342,11 @@ summary.wgaim <- function(object, parentData, ...){
     zc <- rev(object$coefficients$fixed[zind])
     zn <- znam[zind]
     zn <- substr(zn, 2, nchar(zn))
-    collab <- c("Chromosome", "Left Marker", "dist(cM)", "Right Marker", "dist(cM)", "Size", "z.ratio", "Pr(z)", "LOD")   
-    qtlmat <- matrix(ncol = 9, nrow = length(wchr))
+    collab <- c("Chromosome", "Left Marker", "dist(cM)", "Right Marker", "dist(cM)", "Size", "z.ratio", "Pr(z)")   
+    qtlmat <- matrix(ncol = 8, nrow = length(wchr))
     qtlmat[,2:5] <- getQTL(object, parentData)
     qtlmat[,1] <- wchr
-    qtlmat[,6:9] <- c(round(zc, 3), zr, round(2*(1 - pnorm(abs(zr))), 4),  round(0.5*log(exp(zr^2), base = 10), 4))
+    qtlmat[,6:8] <- c(round(zc, 3), zr, round(2*(1 - pnorm(abs(zr))), 4))
     qtlmat <- matrix(qtlmat[order(qtlmat[,1]),], nrow = length(wchr))
     dimnames(qtlmat) <- list(as.character(1:length(wchr)), collab)
     class(qtlmat) <- "summary.wgaim"
