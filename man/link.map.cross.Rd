@@ -4,11 +4,11 @@
 \title{Plot a genetic linkage map}
 \description{
 Neatly plots the genetic linkage map with marker locations and
-marker names. 
+marker names.
 }
 \usage{
 \method{link.map}{cross}(object, chr, max.dist, marker.names = "markers",
-     tick = FALSE, squash = TRUE, \ldots)
+     tick = FALSE, squash = TRUE, m.cex = 0.6, \ldots)
 }
 \arguments{
   \item{object}{object of class "\code{cross}"}
@@ -23,7 +23,9 @@ marker names.
     generated for the chromosome names. Defaults to \code{FALSE}}
   \item{squash}{logical value. if \code{TRUE} then creates extra room on
     the left side of the chromosomes. This is useful for plotting trait
-    names for QTLs using \code{link.map.wgaim} and \code{link.map.default}}  
+    names for QTLs using \code{link.map.wgaim} and
+    \code{link.map.default}}
+  \item{m.cex}{the expansion factor to use for the marker names}
   \item{\ldots}{arguments passed to "\code{plot}" to set up the plot
     region. Arguments may also be passed to "\code{text}" for the
     manipulation of the marker names}
@@ -32,15 +34,15 @@ marker names.
 This plotting procedure provides a neater visual display of the
 chromosomes without marker names overlapping vertically. The plotting region will
 adjust itself to ensure that all marker names are in the region. For
-this reason the default value for the "\code{cex}" parameter passed to
-"\code{text}" should be manipulated until an aesthetic genetic map is reached.
+this reason the value for "\code{m.cex}" is passed to
+"\code{text}" and should be manipulated until an aesthetic genetic map is reached.
 
 For large maps with many chromosomes, marker names and adjacent
 chromosomes will overlap horizontally. For the interest of readability
 this has not been corrected. For this particular situation it is
 suggested that the user horizontally maximise the plotting window
 until no overlapping occurs or subset the genetic map to achieve the
-desired result.    
+desired result.
 }
 \value{This invisibly returns the following list for manipulation with
   \code{link.map.wgaim}
@@ -49,7 +51,7 @@ desired result.
   \item{map}{A list named by the chromosomes with each element
     containing the locations of markers on the chromosomes}
   \item{chrpos}{The numerical position of the chromosomes on the
-    plotting region} 
+    plotting region}
 }
 \references{
   Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
@@ -60,7 +62,7 @@ desired result.
 \seealso{\code{\link{link.map.wgaim}}}
 \examples{
 data(raccas, package = "wgaim")
-link.map(raccas, cex = 0.5) 
+link.map(raccas, cex = 0.5)
 
 }
 \keyword{hplot}

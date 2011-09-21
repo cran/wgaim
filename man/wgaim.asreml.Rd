@@ -3,42 +3,67 @@
 \alias{wgaim}
 \title{wgaim method for class "asreml"}
 \description{Fits an iterative Whole Genome Average Interval Mapping
-  (wgaim) model for QTL detection 
+  (wgaim) model for QTL detection
 }
 \usage{
-\method{wgaim}{asreml}(baseModel, parentData, TypeI = 0.05, attempts = 5,
-                       trace = TRUE, \ldots)
+\method{wgaim}{asreml}(baseModel, phenoData, intervalObj, merge.by = NULL,
+         gen.type = "interval", TypeI = 0.05, attempts = 5,
+         trace = TRUE, verboseLev = 0, \ldots)
 }
 \arguments{
-  \item{baseModel}{A model of class "\code{asreml}" usually representing
-    a base model with which to build the qtl model.  
+  \item{baseModel}{a model object of class "\code{asreml}" usually representing
+    a base model with which to build the qtl model.
+}
+  \item{phenoData}{a data frame containing the phenotypic
+    elements used to fit \code{baseModel}. This data is checked against the base
+    models data
+}
+  \item{intervalObj}{a list object containing the genotypic data, usually an "\code{interval}"
+    object obtained from using \code{cross2int}. This object may contain
+    many more markers than observations (see Details).
+}
+ \item{merge.by}{a character string or name of the column(s) in \code{phenoData} and
+   \code{intervalObj} to merge the phenotypic and genotypic data sets.
+ }
+\item{gen.type}{a character string determining the type of genetic data to
+  be used in the analysis. Possibilities are "\code{interval}" and
+  "\code{markers}". The default is "\code{interval}". (see Details).
+}
+  \item{TypeI}{a numerical value determining the level of significance
+    for detecting a QTL. The default is 0.05.
   }
-  \item{parentData}{A data structure that inherits the class
-    "\code{interval}" containing the genotypic data as well as the
-    phenotypic data used in the \code{baseModel}. This should contain a
-    structure called "\code{full.data}" from appropriately merging
-    phenotypic and genotypic data (see \code{read.interval} and \code{wmerge}).     
-  }
-  \item{TypeI}{The level of significance for detecting a QTL. The default is
-  0.05.}
-  \item{attempts}{The number of attempts at convergence for the fixed or
+  \item{attempts}{An integer representing the number of attempts at convergence for the fixed or
     random qtl model. The default is 5.}
   \item{trace}{An automatic tracing facility. If \code{trace = TRUE} then
     all \code{asreml} output is piped to the screen during the analysis.
   If \code{trace = "file.txt"}, then output from all asreml models is
   piped to "\code{file.txt}". Both trace machanisms will display a
   message if a QTL is detected.}
+ \item{verboseLev}{numerical value, either 0 or 1, determining the level of tracing
+   outputted during execution of the algorithm A 0 value will produce
+   the standard model fitting output from the fitted ASReml models
+   involved in the forward selection. A value of 1 will add a table of
+   Chromosome and Interval outlier statistics for each iteration}
   \item{\ldots}{Any other extra arguments to be passed to each of the
     \code{asreml} calls. These may also include \code{asreml.control} arguments.}
 }
 \details{
-The \code{parentData} should contain a data structure "\code{full.data}"
-which consists of a genotypic and phenotypic information appropriately merged
-(see \code{wmerge}.)   
-  
-As the Whole Genome Average Interval Mapping approach detects QTL
-sequentially it may require many calls to \code{asreml}. For this reason
-the function may seem slow and users should be patient.
+In the initial call to \code{wgaim.asreml}, the marker or interval
+information is collated from \code{intervalObj}. If \code{gen.type =
+  "interval"} then midpoints of intervals are collated from the
+"\code{intval}" component of \code{intervalObj}. If \code{gen.type =
+  "markers"} then markers are collated from the "\code{imputed.data}"
+component of \code{intervalObj} (It should be noted that a
+"\code{marker}" analysis is less efficient than an "\code{interval}" analysis as
+it does not take into account the correlation of the marker effects in
+the specificity of the model; see Verbyla et. al, 2007).
+
+This version of \pkg{wgaim} allows high dimensional marker information
+to be analysed. A simple transformation of the collated high dimensional
+marker set shows that it may be reduced to the number of genetic lines
+used in the analysis. This transformation is internal to the
+\code{wgaim.asreml} call and users can now expect a considerably large
+acceleration in the performance of \pkg{wgaim}.
 
 It is recommended that \code{trace = "file.txt"} be used to pipe the
 sometimes invasive tracing of \code{asreml} licensing and fitting
@@ -52,39 +77,40 @@ the function.
   "\code{asreml}" by default. The object returned is actually an \code{asreml}
   object (see \code{asreml.object}) with the addition of components from
   the QTL detection listed below.
-  
+
   \item{QTL}{A list of components from the significant QTL detected
-    including a character vector of the significant chromosomes the
-    QTL were detected in \code{sig.chr} and the significant intervals
-    on each chromosome in \code{sig.int}. For exploratory purposes the
-    final random effects qtl model is also returned in the component
-    \code{qtlModel}. There are also a number of diagnostic meausres that
+    including a character vector of the significant QTL along with a
+    vector of the QTL effect sizes. There are also a number of diagnostic meausres that
     can be found in \code{diag} that are used in conjunction with
     \code{tr.wgaim} and \code{out.stat}.}
- } 
-\references{
- Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
- Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
- Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
-  
+ }
+ \references{
+   Verbyla, A. P & Taylor, J. D (2011). High dimensional whole genome
+   average interval mapping and a random effects formulation.
+   \emph{Theoretical and Applied Genetics}. Submitted.
+
+   Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
+   Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
+   Statistical Software}, \bold{40}(7), 1-18. URL \url{http://www.jstatsoft.org/v40/i07/}.
+
  Verbyla, A. P., Cullis, B. R., Thompson, R (2007) The analysis of QTL
  by simultaneous use of the full linkage map. \emph{Theoretical And
     Applied Genetics}, \bold{116}, 95-111.
 }
 \author{Julian Taylor, Simon Diffey, Ari Verbyla and Brian Cullis}
-\seealso{\code{\link{wmerge}}, \code{\link{print.wgaim}}, \code{\link{summary.wgaim}}}
+\seealso{\code{\link{print.wgaim}}, \code{\link{summary.wgaim}}}
 \examples{
 
 \dontrun{
-# read in data 
+# read in data
 
 data(zinc, package = "wgaim")
 data(raccas, package = "wgaim")
 
-# subset linkage map and merge genotypic with phenotypic
+# subset linkage map and convert to "interval" object
 
 raccasS <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
-raccasM <- wmerge(raccasS, zinc, by = "id")
+raccasS <- cross2int(raccasS, missgeno = "Martinez")
 
 # base model
 
@@ -92,8 +118,8 @@ zn.fm <- asreml(znconc ~ Type, random = ~ Block + id, data = zinc)
 
 # find QTL's
 
-zn.qtl <- wgaim(zn.fm, parentData = raccasM, trace = "trace.txt",
-na.method.X = "include") 
+zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccasS, trace = "trace.txt",
+na.method.X = "include")
 }
 
 }
