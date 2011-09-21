@@ -65,8 +65,8 @@ data(raccas, package = "wgaim")
 
 # subset linkage map and convert to "interval" object
 
-raccasS <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
-raccasS <- cross2int(raccasS, missgeno = "Martinez")
+raccas <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
+raccas <- cross2int(raccas, missgeno = "Martinez")
 
 ## base model
 
@@ -74,8 +74,8 @@ zn.fm <- asreml(znconc ~ Type, random = ~ Block + id, data = zinc)
 
 # find QTL
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccasS, trace = "trace.txt",
-na.method.X = "include")
+zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
+merge.by = "id", trace = "trace.txt", na.method.X = "include")
 
 # summarise
 

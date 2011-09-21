@@ -6,8 +6,8 @@ wgaim.default <- function(baseModel, ...)
   stop("Currently the only supported method is \"asreml\"")
 
 wgaim.asreml <- function (baseModel, phenoData, intervalObj, merge.by = NULL,
-                           gen.type = "interval", TypeI = 0.05, attempts = 5,
-                           trace = TRUE, verboseLev = 0, ...)
+                          gen.type = "interval", method = "random", TypeI = 0.05,
+                          attempts = 5, trace = TRUE, verboseLev = 0, ...)
 {
     if (missing(phenoData))
         stop("phenoData is a required argument.")
@@ -73,38 +73,55 @@ wgaim.asreml <- function (baseModel, phenoData, intervalObj, merge.by = NULL,
     cat("\nRandom Effects QTL Model Iteration (1):\n")
     cat("=========================================\n")
     add.qtl$call$data <- quote(asdata)
-    add.qtl <- update.wgaim(add.qtl, attempts = attempts, random. = add.form, ...)
+    add.qtl <- updateWgaim(add.qtl, attempts = attempts, random. = add.form, ...)
     update <- FALSE
     which.i <- 1
     dmat <- data.frame(L0 = 0, L1 = 0, Statistic = 0, Pvalue = 0)
-    zrl <- zcl <- oint <- list()
+    vl <- cl <- oint <- ochr <- list()
     qtl.form <- as.formula(paste("~ . + idv(grp('qtls'))"))
     qtl <- c()
     repeat {
         if (update) {
-            add.qtl$call$group$qtls <- baseModel$call$group$qtls <- qtls.cnt
+            baseModel$call$data <- add.qtl$call$data <- quote(asdata)
             add.qtl$call$group$ints <- cnt
-            cat("\nRandom Effects QTL Model Iteration (", which.i, "):\n")
-            cat("========================================\n")
-            baseModel$call$data <- quote(asdata)
-            baseModel <- v.modify(baseModel)
-            if(which.i == 2)
-                baseModel <- update.wgaim(baseModel, attempts = attempts, random. = qtl.form, ...)
-            else baseModel <- update.wgaim(baseModel, attempts = attempts, ...)
-            sigma2 <- baseModel$sigma2
-            if (names(baseModel$gammas.con[length(baseModel$gammas.con)]) == "Fixed")
-                sigma2 <- 1
-            zrat <- round(baseModel$coefficients$random/sqrt(baseModel$vcoeff$random*sigma2), 2)
-            zind <- grep("X\\.", names(zrat))
-            zrl[[which.i - 1]] <- rev(zrat[zind])
-            zcl[[which.i - 1]] <- baseModel$coefficients$random[zind]
-            cat("\nRandom Effects QTL plus Interval/Marker Model Iteration (", which.i,"):\n")
-            cat("=============================================================\n")
-            add.qtl$call$data <- quote(asdata)
-            add.qtl <- v.modify(add.qtl)
-            if(which.i == 2)
-                add.qtl <- update.wgaim(add.qtl, attempts = attempts, random. = qtl.form, ...)
-            else add.qtl <- update.wgaim(add.qtl, attempts = attempts, ...)
+            if(method == "random"){
+                add.qtl$call$group$qtls <- baseModel$call$group$qtls <- qtls.cnt
+                cat("\nRandom Effects QTL Model Iteration (", which.i, "):\n")
+                cat("========================================\n")
+                baseModel <- v.modify(baseModel)
+                if(which.i == 2)
+                    baseModel <- updateWgaim(baseModel, attempts = attempts, random. = qtl.form, ...)
+                else baseModel <- updateWgaim(baseModel, attempts = attempts, ...)
+                sigma2 <- baseModel$sigma2
+                if (names(baseModel$gammas.con[length(baseModel$gammas.con)]) == "Fixed") sigma2 <- 1
+                cat("\nRandom Effects QTL plus Interval/Marker Model Iteration (", which.i,"):\n")
+                cat("=============================================================\n")
+                add.qtl <- v.modify(add.qtl)
+                if(which.i == 2)
+                    add.qtl <- updateWgaim	(add.qtl, attempts = attempts, random. = qtl.form, ...)
+                else add.qtl <- updateWgaim	(add.qtl, attempts = attempts, ...)
+                list.coefs <- add.qtl$coefficients$random
+                zind <- grep("X\\.", names(list.coefs))
+                list.coefs <- list.coefs[zind]
+                names(list.coefs) <- gsub("qtls_","",names(list.coefs))
+                cl[[which.i - 1]] <- list.coefs
+                vl[[which.i - 1]] <- add.qtl$vcoeff$random[zind]
+            }
+            else {
+                fix.form <- as.formula(paste(". ~ . +", qtl.x, sep = ""))
+                cat("\nFixed Effects QTL Model Iteration (", which.i, "):\n")
+                cat("========================================\n")
+                baseModel <- updateWgaim(baseModel, attempts = attempts, fixed. = fix.form, ...)
+                sigma2 <- baseModel$sigma2
+                if (names(baseModel$gammas.con[length(baseModel$gammas.con)]) == "Fixed") sigma2 <- 1
+                cat("\nRandom Effects QTL Model Iteration (", which.i, "):\n")
+                cat("=========================================\n")
+                add.qtl <- updateWgaim(add.qtl, attempts = attempts, fixed. = fix.form, ...)
+                list.coefs <- add.qtl$coefficients$fixed
+                zind <- grep("X\\.", names(list.coefs))
+                cl[[which.i - 1]] <- rev(list.coefs[zind])
+                vl[[which.i - 1]] <- rev(add.qtl$vcoeff$fixed[zind])
+            }
         }
         baseLogL <- baseModel$loglik
         stat <- 2 * (add.qtl$loglik - baseLogL)
@@ -114,11 +131,13 @@ wgaim.asreml <- function (baseModel, phenoData, intervalObj, merge.by = NULL,
         if (mD$p > mD$q)
             add.qtl$xtra <- mD$xtra
         add.qtl$call$data <- quote(asdata)
-        pick <- qtl.pick(add.qtl, intervalObj, gen.type, state, verboseLev)
+        if(method == "random") pick <- qtl.pick.new(add.qtl, intervalObj, gen.type, state, verboseLev)
+        else pick <- qtl.pick.old(add.qtl, intervalObj, gen.type, state, verboseLev)
         state <- pick$state
         cnt <- pick$cnt
         qtl[which.i] <- pick$qtl
         oint[[which.i]] <- pick$oint
+        ochr[[which.i]] <- pick$ochr
         qtl.x <- gsub("Chr\\.", "X.", qtl[which.i])
         if (is.null(add.qtl$xtra))
             phenoData[qtl.x] <- mD$asdata[qtl[which.i]] * 100
@@ -139,15 +158,19 @@ wgaim.asreml <- function (baseModel, phenoData, intervalObj, merge.by = NULL,
         which.i <- which.i + 1
         update <- TRUE
     }
+    baseModel <- add.qtl
     class(baseModel) <- c("wgaim", "asreml")
     if (length(qtl)) {
+        baseModel$QTL$method <- method
         baseModel$QTL$type <- gen.type
         baseModel$QTL$qtl <- qtl
-        baseModel$QTL$effects <- baseModel$coefficients$random[grep("X.", names(baseModel$coefficients$random))]
+        baseModel$QTL$effects <- cl[[which.i - 1]]
+        baseModel$QTL$veffects <- vl[[which.i - 1]]
         baseModel$QTL$diag$dmat <- dmat
-        baseModel$QTL$diag$zrl <- zrl
-        baseModel$QTL$diag$zcl <- zcl
+        baseModel$QTL$diag$vl <- vl
+        baseModel$QTL$diag$cl <- cl
         baseModel$QTL$diag$oint <- oint
+        if(method == "fixed") baseModel$QTL$diag$ochr <- ochr
     }
     data.name <- paste(as.character(baseModel$call$fixed[2]), "data", sep = ".")
     baseModel$call$data <- as.name(data.name)
@@ -216,7 +239,7 @@ mergeData <- function(phenoData, geneticData, by) {
     invisible(list(asdata=asdata, cnt=cnt, qtls.cnt = qtls.cnt, p=p, q=q, xtra=xtra))
 }
 
-update.wgaim <- function(object, ...){
+updateWgaim <- function(object, ...){
   attempts <- list(...)$attempts
   class(object) <- "asreml"
   object <- update(object, ...)
@@ -256,7 +279,7 @@ error.code <- function(ec = NULL){
 
 getQTL <- function (object, intervalObj)
 {
-  spe <- strsplit(substring(unlist(names(object$QTL$effects)), 8),"\\.")
+  spe <- strsplit(substring(unlist(names(object$QTL$effects)), 3),"\\.")
   wchr <- unlist(lapply(spe, function(el) el[1]))
   wint <- as.numeric(unlist(lapply(spe, function(el) el[2])))
   qtlm <- matrix(ncol = 6, nrow = length(wchr))
@@ -287,37 +310,48 @@ summary.wgaim <- function (object, intervalObj, LOD = TRUE, ...) {
         sigma2 <- object$sigma2
         if(names(object$gammas.con[length(object$gammas.con)]) == "Fixed")
             sigma2 <- 1
-        zrat <- object$coefficients$random/sqrt(object$vcoeff$random * object$sigma2)
-        znam <- names(zrat)
-        zind <- grep("qtls_X\\.", znam)
-        zr <- zrat[zind]
-        zc <- object$coefficients$random[zind]
-        Pvalue <- pnorm(-zr)
-        Pvalue[zc > 0] <- 1-Pvalue[zc > 0]
+        zrat <- qtls/sqrt(object$QTL$veffects * sigma2)
+        if(object$QTL$method == "random"){
+            Pvalue <- pnorm(-zrat)
+            Pvalue[qtls > 0] <- 1-Pvalue[qtls > 0]
+            adds <- round(Pvalue, 3)
+            addn <- "Prob"
+        }
+        else {
+            adds <- cbind(round(zrat, 3), round(2*(1-pnorm(abs(zrat))), 3))
+            addn <- c("z.ratio", "Pr(z)")
+        }
         qtlmat <- as.data.frame(matrix(getQTL(object, intervalObj), nrow = length(qtls)))
-        qtlmat <- cbind.data.frame(qtlmat[,c(1,3:dim(qtlmat)[2])], round(zc, 3), round(Pvalue, 3))
+        qtlmat <- cbind.data.frame(qtlmat[,c(1,3:dim(qtlmat)[2])], round(qtls, 3), adds)
         if(object$QTL$type == "interval")
             collab <- c("Chromosome", "Left Marker", "dist(cM)",
-                        "Right Marker", "dist(cM)", "Size", "Prob")
+                        "Right Marker", "dist(cM)", "Size", addn)
         else
-            collab <- c("Chromosome", "Marker", "dist(cM)", "Size", "Prob")
+            collab <- c("Chromosome", "Marker", "dist(cM)", "Size", addn)
         if (LOD) {
-            qtlmat <- cbind.data.frame(qtlmat, round(0.5 * log(exp(zr^2),
+            qtlmat <- cbind.data.frame(qtlmat, round(0.5 * log(exp(zrat^2),
                  base = 10), 3))
              collab <- c(collab, "LOD")
         }
-        qtlmat <- qtlmat[order(qtlmat[, 1], as.numeric(qtlmat[,3])), ]
+        qtlmat <- qtlmat[order(qtlmat[, 1], as.numeric(as.character(qtlmat[,3]))), ]
         rownames(qtlmat) <- as.character(1:length(qtls))
         names(qtlmat) <- collab
     }
     qtlmat
 }
 
-qtlTable <- function(..., intervalObj = NULL, labels = NULL){
+qtlTable <- function(..., intervalObj = NULL, labels = NULL, columns = "all"){
     if(is.null(intervalObj))
         stop("Argument intervalObj cannot be NULL")
+    nams <- unlist(lapply(list(...), function(el) el$QTL$type))
+    if(length(unique(nams)) > 1)
+        stop("Models must have been analysed with the same genetic type.")
     dots <- list(...)
-    qlist <- lapply(dots, function(el, intervalObj) summary(el, intervalObj), intervalObj)
+    qlist <- lapply(dots, function(el, intervalObj, columns){
+                    summ <- summary(el, intervalObj)
+                    if(is.numeric(columns))
+                        summ  <- summ[,columns]
+                    summ}, intervalObj, columns)
     ql <- unlist(lapply(qlist, function(el) dim(el)[1]))
     if(!is.null(labels)){
        if(length(labels) != length(dots))
@@ -360,19 +394,32 @@ tr.wgaim <- function (object, iter = 1:length(object$QTL$effects), diag.out = TR
     if (!is.na(pmatch("digits", names(dots))))
         dig <- dots$digits
     else dig <- options()$digits
-    zrl <- object$QTL$diag$zrl
+    cl <- object$QTL$diag$cl
+    vl <- object$QTL$diag$vl
+    sigma2 <- object$sigma2
+    if(names(object$gammas.con[length(object$gammas.con)]) == "Fixed")
+        sigma2 <- 1
+    zrl <- lapply(1:length(object$QTL$effects), function(i, cl, vl, sigma2)
+                  cl[[i]]/(sqrt(vl[[i]]*sigma2)), cl = cl, vl = vl, sigma2 = sigma2)
     if (any(ret <- is.na(pmatch(iter, 1:length(zrl))))) {
         warning("\"iter\" values outside expected range .. using ones that are in iteration range")
         iter <- iter[!ret]
     }
-    pvals <- lapply(zrl, function(el, len, dig) {
-                       pv <- pnorm(-el)
-                       pv[el > 0] <- 1 - pv[el > 0]
-                       pv <- round(pv, dig)
-                       c(pv, rep(NA, len - length(pv)))
+    if(object$QTL$method == "random"){
+        pvals <- lapply(zrl, function(el, len, dig) {
+            pv <- pnorm(-el)
+            pv[el > 0] <- 1 - pv[el > 0]
+            pv <- round(pv, dig)
+            c(pv, rep(NA, len - length(pv)))
     }, len = length(zrl), dig = dig)
+    } else {
+        pvals <- lapply(zrl, function(el, len, dig) {
+            pv <- round(2 * (1 - pnorm(abs(el))), dig)
+            c(pv, rep(NA, len - length(pv)))
+        }, len = length(zrl), dig = dig)
+    }
     qtlmat <- do.call("rbind", pvals)
-    qnams <- names(object$QTL$effects)
+    qnams <- gsub("X\\.", "", names(object$QTL$effects))
     dimnames(qtlmat) <- list(paste("Iter", 1:length(zrl), sep = "."),
         qnams)
     cat("\nIncremental QTL P-value Matrix.\n")
@@ -393,7 +440,7 @@ tr.wgaim <- function (object, iter = 1:length(object$QTL$effects), diag.out = TR
     }
 }
 
-qtl.pick <- function(asr, intervalObj, gen.type, state, verboseLev) {
+qtl.pick.new <- function(asr, intervalObj, gen.type, state, verboseLev) {
 
     ## is it (p > q) or (q > p)?
     sigma2 <- asr$sigma2
@@ -470,6 +517,110 @@ qtl.pick <- function(asr, intervalObj, gen.type, state, verboseLev) {
     state[nint] <- 0
     message("Found QTL on chromosome ", wchr, " ", gen.type, " ", wint)
     list(state = state, qtl = qtl, oint = oint)
+}
+
+qtl.pick.old <- function(asr, intervalObj, gen.type, state, verboseLev) {
+
+    ## is it (p > q) or (q > p)?
+    sigma2 <- asr$sigma2
+    if(names(asr$gammas.con[length(asr$gammas.con)]) == "Fixed")
+        sigma2 <- 1
+    if(!is.null(xtra <- asr$xtra)) {
+        whq <- unlist(eval(asr$call$group))
+        n.int <- length(whq)
+        cat(" Predict step for outlier statistics \n")
+        cat("=====================================\n")
+
+        ## use predict for random effects a and their pev
+
+        qlev <- diag(n.int)
+        qlist <- list(as.vector(qlev))
+        names(qlist) <- "ints"
+
+        pv <- predict(asr, classify = "ints",
+                      only = "ints",
+                      levels=qlist, vcov=TRUE, maxiter=1)
+
+        ## covariance matrix
+
+        gamma <- pv$gammas[grep("ints", names(asr$gammas))]
+
+        ## atilde and var(atilde)
+
+        atilde <- pv$predictions$pvals[, 'predicted.value']
+        atilde <- xtra %*% atilde
+
+        pev <- pv$predictions$vcov
+        vatilde <- sigma2 * gamma * diag(n.int) - pev
+        vatilde <- xtra %*% vatilde %*% t(xtra)
+        vatilde <- diag(vatilde)
+        gnams <- names(state)[as.logical(state)]
+    }
+    else {
+        ## atilde and var(atilde) for p < q
+
+        gamma <- asr$gammas[grep("ints", names(asr$gammas))]
+        rnams <- names(asr$coefficients$random)
+        grp <- grep("ints", rnams)
+        atilde <- asr$coefficients$random[grp]
+        pevar <- sigma2 * asr$vcoeff$random[grp]
+        vatilde <- sigma2 * gamma - pevar
+        gnams <- substring(rnams[grp], first=6)
+    }
+    names(atilde) <- gnams
+    names(vatilde) <- gnams
+    ntj2 <- ifelse(!is.na(atilde^2/vatilde), atilde^2/vatilde, 0)
+    names(ntj2) <- gnams
+
+####### Chromosome first
+
+    chr.names <- names(intervalObj$geno)
+    nochr <- length(chr.names)
+    nsumtj2 <- c()
+    for(c in 1:nochr){
+        wha <- grep(chr.names[c], gnams)
+        whc <- unlist(lapply(strsplit((gnams)[wha], split='\\.'), function(x) x[2]))
+        whl <- whc %in% chr.names[c]
+        wha <- wha[whl]
+        catilde <- atilde[wha]
+        nums <- catilde * catilde
+        names(nums) <- names(atilde)[wha]
+        dens <- vatilde[wha]
+        nsumtj2[c] <- ifelse(!is.na(sum(nums)/sum(dens)),sum(nums)/sum(dens),0)
+    }
+    names(nsumtj2) <- chr.names # names(nmark)
+    ochr <- c(nsumtj2)
+    chind <- (1:nochr)[nsumtj2 == max(nsumtj2)]
+    wchr <- chr.names[chind] # names(nmark)[chind]
+    chri <- ntj2[grep(wchr, gnams)]
+    whc <- unlist(lapply(strsplit(names(chri), split='\\.'), function(x) x[2]))
+    whl <- whc %in% wchr
+    chri <- chri[whl]
+    wint <- (1:length(chri))[chri == max(chri)]
+    qtl <- nint <- names(chri)[wint]
+   if(verboseLev > 0) {
+     cat("\n Selection of chromosome using the AOM statistic\n")
+     cat("=============================================== \n")
+     for(i in 1:nochr)
+       cat(" Chromosome ", chr.names[i], "Outlier Statistic ", nsumtj2[i], "\n")
+     cat("============================================= \n\n")
+     cgen <- "Interval"
+     if(gen.type == "marker") cgen <- "Marker"
+     cat(cgen, "outlier statistics \n")
+     cat("=============================================== \n")
+     for(i in 1:length(chri))
+         cat(cgen, names(chri)[i], "Outlier Statistic ", chri[i],"\n")
+     cat("=============================================== \n\n")
+   }
+
+    ## fill out interval stats and update state
+    oint <- c(ntj2)
+    tint <- state
+    tint[as.logical(state)] <- oint
+    oint <- tint
+    state[nint] <- 0
+    message("Found QTL on chromosome ", wchr, " ", gen.type, " ", wint)
+    list(state = state, qtl = qtl, ochr = ochr, oint = oint)
 }
 
 cross2int <- function(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE, id = "id",
@@ -943,7 +1094,7 @@ link.map.default <- function (object, intervalObj, chr, max.dist, marker.names =
         list.col = list.col, list.cex = list.cex, trait.labels = trait, tick = tick, ...)
   }
 
-out.stat <- function (object, intervalObj, iter = NULL, chr = NULL,
+out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL,
     ...)
 {
     mod <- function(x, num) {
@@ -956,7 +1107,7 @@ out.stat <- function (object, intervalObj, iter = NULL, chr = NULL,
     cex <- dots$cex
     if (is.null(qtl <- object$QTL$effects))
         stop("There are no outlier statistics to plot.")
-    qtl <- gsub("qtls_X.","",names(qtl))
+    qtl <- gsub("X.","",names(qtl))
     if(object$QTL$type == "interval")
         dist <- lapply(intervalObj$geno, function(el) {
                         if(length(el$map) == 1) {
@@ -971,7 +1122,10 @@ out.stat <- function (object, intervalObj, iter = NULL, chr = NULL,
                            names(tel)[1] <- names(el$map)[1]
                            tel })
     ln <- length(qtl)
+    ochr <- object$QTL$diag$ochr
     oint <- object$QTL$diag$oint
+    cnam <- names(ochr[[1]])
+    cnam <- gsub("Chr.", "", cnam)
     inam <- names(oint[[1]])
     inam <- strsplit(gsub("Chr.", "", inam), "\\.")
     chn <- unlist(lapply(inam, function(el) el[1]))
@@ -982,12 +1136,18 @@ out.stat <- function (object, intervalObj, iter = NULL, chr = NULL,
         if (any(iter > ln))
             stop("\"iter\" is greater than the number of QTL found in the analysis.")
         oint <- oint[iter]
+        ochr <- ochr[iter]
         ln <- length(iter)
     }
     else iter <- 1:ln
     oint <- unlist(oint)
     dint <- cbind.data.frame(int = oint, chn = rep(chn, length(iter)),
         inn = rep(inn, length(iter)))
+    if (!int){
+        if(object$QTL$method == "random")
+            stop("This method does not produce any chromosome statistics.")
+        chr <- NULL
+    }
     if (!is.null(chr)) {
         dint <- dint[as.character(dint$chn) %in% chr, ]
         dist <- unlist(dist[chr])
@@ -1009,19 +1169,35 @@ out.stat <- function (object, intervalObj, iter = NULL, chr = NULL,
     prow <- length(unique(dint$its))
     if (prow > 5)
         prow <- 5
-    slabs <- strsplit(labs, "\\.")
-    clabs <- unlist(lapply(slabs, function(el) el[1]))
-    tabc <- table(clabs)
-    cumc <- c(1, cumsum(tabc) + 1)
-    labs[-cumc] <- " "
-    labs <- as.character(labs)
-    print(xyplot(int ~ dist | its, type = "l", data = dint,
-                 groups = chn, panel = panel.superpose, panel.groups = function(x,
-                                                        y, ...) {
-                     panel.xyplot(x, y, ...)
-                 }, ylab = "outlier statistic", scales = list(x = list(labels = labs,
-                 rot = 45, at = unique(dist), cex = 0.6)), xlab = "Interval",
-                 layout = c(1, prow), ...))
+    if(int){
+        slabs <- strsplit(labs, "\\.")
+        clabs <- unlist(lapply(slabs, function(el) el[1]))
+        tabc <- table(clabs)
+        cumc <- c(1, cumsum(tabc) + 1)
+        labs[-cumc] <- " "
+        labs <- as.character(labs)
+        print(xyplot(int ~ dist | its, type = "l", data = dint,
+                     groups = chn, panel = panel.superpose, panel.groups = function(x,
+                                                            y, ...) {
+                         panel.xyplot(x, y, ...)
+                     }, ylab = "outlier statistic", scales = list(x = list(labels = labs,
+                     rot = 45, at = unique(dist), cex = 0.6)), xlab = object$QTL$type,
+                     layout = c(1, prow), ...))
+    } else {
+        dups <- !duplicated(paste(dint[, "chn"], dint[, c("its")],
+                                  sep = "."))
+        dchr <- dint[dups, ]
+        dchr$int <- unlist(ochr)
+        names(dchr)[1] <- "chr"
+        bc <- print(barchart(chr ~ chn | its, data = dchr, ylab = "outlier statistic",
+            xlab = "Chromosome", layout = c(1, prow), ...))
+        wchr <- dchr$chr[paste(dchr$chn, dchr$itn, sep = ":") %in%
+            paste(td$chn, td$itn, sep = ":")]
+        td$int <- wchr
+        td$whc <- pmatch(td$chn, as.character(unique(dchr$chn)),
+            duplicates.ok = TRUE)
+        names(td)[1] <- "chr"
+    }
     panel.locs <- as.vector(trellis.currentLayout())
     panel.locs <- panel.locs[panel.locs > 0]
     rows <- round(mod(as.vector(panel.locs), 5), 1)
@@ -1030,11 +1206,17 @@ out.stat <- function (object, intervalObj, iter = NULL, chr = NULL,
         trellis.focus("panel", row = rows[k], column = 1, highlight = TRUE)
         tq <- paste(td$chn[td$itn == wh], td$inn[td$itn == wh],
             sep = ".")
+        if (int)
             panel.text(td$dist[td$itn == wh], td$int[td$itn ==
                 wh], label = tq, col = 1, cex = cex)
+        else {
+            lims <- bc$y.limits[2] - bc$y.limits[1]
+            panel.text(td$whc[td$itn == wh], td$chr[td$itn ==
+                wh] + 0.1 * lims, label = tq, col = 1, cex = cex)
+        }
         k <- k + 1
       }
-  }
+}
 
 
 

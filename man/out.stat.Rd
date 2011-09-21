@@ -9,12 +9,15 @@ a trace across the genome separated by chromosome and appropriately
 spaced by their distances.
 }
 \usage{
-out.stat(object, intervalObj, iter = NULL, chr =
-NULL, \ldots)
+out.stat(object, intervalObj, int = TRUE, iter = NULL, chr = NULL, \ldots)
 }
 \arguments{
   \item{object}{object of class "\code{wgaim}"}
   \item{intervalObj}{object of class "\code{cross}" or "\code{interval}"}
+  \item{int}{logical value, if \code{TRUE} then plot interval outlier
+    statistics. If \code{FALSE} then plot chromosome outlier
+    statistics. This cna only be done if the analysis method for the
+    object was "\code{fixed}"}
   \item{iter}{numeric value determining which iterations will be plotted}
   \item{chr}{character string naming the subset of chromosomes to
     plot. This can only be used when \code{int} is \code{TRUE}}
@@ -45,12 +48,12 @@ appropriate positions in each panel.
 \dontrun{
 # fit wgaim model
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccasS, trace = "trace.txt",
-na.method.X = "include")
+zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
+merge.by = "id", trace = "trace.txt", na.method.X = "include")
 
 # plot QTL interval outlier statistics
 
-out.stat(zn.qtl, raccasM, iter = 1:5, cex = 0.4)
+out.stat(zn.qtl, raccas, iter = 1:5, cex = 0.4)
 
 }
 }

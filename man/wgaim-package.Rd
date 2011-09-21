@@ -20,18 +20,20 @@ only brief and users should eventually consult the soon to be released vignette
 that will be a companion to version 1.0 and above.
 
 Version 1.x package highlights:
-
-1) The inclusion of high dimensional genetic data
-2) Users have a choice of whole genome marker or interval analysis.
-3) Selection and estimation of QTL effects occurs using the
+\enumerate{
+\item The inclusion of high dimensional genetic data
+\item Users have a choice of whole genome marker or interval analysis.
+\item Selection and estimation of QTL effects occurs using the
 implementation of Verbyla & Taylor (2011).
+}
 
 Deprecated functions:
-
-1) \code{read.interval}: \code{cross2int} is the conversion function
+\enumerate{
+\item \code{read.interval}: \code{cross2int} is the conversion function
 that should be used.
-2) \code{wmerge}: This function is not required as the genetic
+\item \code{wmerge}: This function is not required as the genetic
 data is merged within the wgaim call.
+}
 
 This package builds on the \pkg{qtl} package of Broman by including
 additional functions for whole genome QTL analysis of a full linkage map

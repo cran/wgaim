@@ -72,12 +72,12 @@ arguments such as \code{pch} or \code{cex} that are passed through the
 \dontrun{
 # fit wgaim model
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccasS, trace = "trace.txt",
-na.method.X = "include")
+zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
+merge.by = "id", trace = "trace.txt", na.method.X = "include")
 
 # plot QTL
 
-link.map(zn.qtl, raccasS, cex = 0.6, list.col = list(m.col = "red"), col = "gray")
+link.map(zn.qtl, raccas, list.col = list(m.col = "red"), col = "gray")
 
 }
 }

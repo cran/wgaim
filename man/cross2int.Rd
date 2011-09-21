@@ -73,7 +73,7 @@ they are from.}
 \item{pheno}{
   A data.frame of phenotypic information with rows as individuals read
   in from \code{read.cross}. A copy of the column named by the "\code{id}" argument
-  can be found here (see \code{read.cross})}.
+  can be found here (see \code{read.cross}).}
 }
 \references{
   Martinez, O., Curnow. R. N. (1994) Missing markers when estimating

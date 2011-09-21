@@ -7,7 +7,7 @@
 }
 \usage{
 \method{wgaim}{asreml}(baseModel, phenoData, intervalObj, merge.by = NULL,
-         gen.type = "interval", TypeI = 0.05, attempts = 5,
+         gen.type = "interval", method = "random", TypeI = 0.05, attempts = 5,
          trace = TRUE, verboseLev = 0, \ldots)
 }
 \arguments{
@@ -28,6 +28,10 @@
 \item{gen.type}{a character string determining the type of genetic data to
   be used in the analysis. Possibilities are "\code{interval}" and
   "\code{markers}". The default is "\code{interval}". (see Details).
+}
+\item{method}{a character string determining the type of algortithm to
+  be used in the analysis. Possibilities are "\code{random}" and
+  "\code{fixed}". The default is "\code{random}". (see Details).
 }
   \item{TypeI}{a numerical value determining the level of significance
     for detecting a QTL. The default is 0.05.
@@ -57,6 +61,15 @@ component of \code{intervalObj} (It should be noted that a
 "\code{marker}" analysis is less efficient than an "\code{interval}" analysis as
 it does not take into account the correlation of the marker effects in
 the specificity of the model; see Verbyla et. al, 2007).
+
+The \code{method} argument in \code{wgaim.asreml} allows the user access
+to two algorithms. If \code{method = "fixed"} then the forward
+selecction algorithm uses the legacy code packaged with pre-1.0 versions
+of \pkg{wgaim}. This code uses the chromosome statistics as a guide to
+its selection of QTL. This selection process is now known to be flawed
+when small linkage groups are present. For this reason it is suggested
+that this option only be used when there are a moderate number of
+markers on each linkage group.
 
 This version of \pkg{wgaim} allows high dimensional marker information
 to be analysed. A simple transformation of the collated high dimensional
@@ -109,8 +122,8 @@ data(raccas, package = "wgaim")
 
 # subset linkage map and convert to "interval" object
 
-raccasS <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
-raccasS <- cross2int(raccasS, missgeno = "Martinez")
+raccas <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
+raccas <- cross2int(raccas, missgeno = "Martinez")
 
 # base model
 
@@ -118,8 +131,8 @@ zn.fm <- asreml(znconc ~ Type, random = ~ Block + id, data = zinc)
 
 # find QTL's
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccasS, trace = "trace.txt",
-na.method.X = "include")
+zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
+merge.by = "id", trace = "trace.txt", na.method.X = "include")
 }
 
 }

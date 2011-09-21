@@ -79,29 +79,29 @@ usual \ldots argument.
 \dontrun{
 ## fit wgaim models
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccasS, trace = "trace.txt",
-na.method.X = "include")
+zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccasS,
+merge.by = "id", trace = "trace.txt", na.method.X = "include")
 
-zn.qtlS <- wgaim(zn.fmS, phenoData = zinc, intervalObj = raccasS, trace = "trace.txt",
-na.method.X = "include")
+zn.qtlS <- wgaim(zn.fmS, phenoData = zinc, intervalObj = raccasS,
+merge.by = "id", trace = "trace.txt", na.method.X = "include")
 
 ## plot QTL intervals
 
 # matching rainbow QTL color and trait names, red flanking markers
 # (default) and gray background markers.
 
-link.map(list(zn.qtl,zn.qtlS), raccasS, cex = 0.6, col = "gray")
+link.map(list(zn.qtl,zn.qtlS), raccas, col = "gray")
 
 # rainbow QTL color and black trait names, red flanking markers
 # (default) and gray background markers.
 
-link.map(list(zn.qtl,zn.qtlS), raccasS, cex = 0.6, list.col = list(t.col = "black",
-m.col = "red"), col = "gray")
+link.map(list(zn.qtl,zn.qtlS), raccas, list.col = list(t.col =
+"black", m.col = "red"), col = "gray")
 
 # monochromatic plot: gray QTLs, black trait names, black flanking
 # markers and gray background markers
 
-link.map(list(zn.qtl,zn.qtlS), raccasS, cex = 0.6, list.col(q.col =
+link.map(list(zn.qtl,zn.qtlS), raccas, list.col = list(q.col =
 rep(gray(0.8), 2), t.col = "black", mcol = "black"), col = "gray")
 
 }
