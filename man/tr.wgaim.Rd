@@ -1,4 +1,5 @@
 \name{tr.wgaim}
+\alias{tr}
 \alias{tr.wgaim}
 \title{Display diagnostic information about wgaim QTL model}
 \description{Displays diagnostic infomation about QTL detection and
@@ -29,7 +30,7 @@ the statistic and the p-value for the statistic.
  \references{
   Verbyla, A. P & Taylor, J. D, Verbyla, K. L (2012). RWGAIM: An efficient high
   dimensional random whole genome average (QTL) interval mapping approach.
-  \emph{Genetics Research}. Submitted.
+  \emph{Genetics Research}. \bold{94}, 291-306.
 
    Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
    Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
@@ -53,18 +54,18 @@ genoRxK <- cross2int(genoRxK, missgeno = "Martinez",
 
 # base model
 
-yield.fm <- asreml(yield ~ Type, random = ~ Genotype + Row + Range,
+rkyld.asf <- asreml(yld ~ Type + lrow, random = ~ Genotype + Range,
                    rcov = ~ ar1(Range):ar1(Row), data = phenoRxK)
 
 # find QTL
 
-yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+rkyld.qtl <- wgaim(rkyld.asf, phenoData = phenoRxK, intervalObj = genoRxK,
    merge.by = "Genotype", gen.type = "interval", method = "fixed",
    selection = "interval", trace = "trace.txt", na.method.X = "include")
 
 # diagnostic check
 
-tr(yield.qtl, digits = 4)
+tr(rkyld.qtl, digits = 4)
 }
 }
 

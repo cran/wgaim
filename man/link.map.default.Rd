@@ -83,10 +83,10 @@ usual \ldots argument.
 \dontrun{
 ## fit wgaim models
 
-tgw.qtl <- wgaim(tgw.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+rktgw.qtl <- wgaim(rktgw.asf, phenoData = phenoRxK, intervalObj = genoRxK,
 merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
-yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+rkyld.qtl <- wgaim(rkyld.asf, phenoData = phenoRxK, intervalObj = genoRxK,
 merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
 ## plot QTL intervals
@@ -94,18 +94,18 @@ merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 # matching rainbow QTL color and trait names, red flanking markers
 # (default) and gray background markers.
 
-link.map(list(tgw.qtl,yield.qtl), genoRxK, col = "gray")
+link.map(list(rktgw.qtl,rkyld.qtl), genoRxK, col = "gray")
 
 # rainbow QTL color and black trait names, red flanking markers
 # (default) and gray background markers.
 
-link.map(list(tgw.qtl,yield.qtl), genoRxK, list.col = list(t.col =
+link.map(list(rktgw.qtl,rkyld.qtl), genoRxK, list.col = list(t.col =
 "black", m.col = "red"), col = "gray")
 
 # monochromatic plot: gray QTLs, black trait names, black flanking
 # markers and gray background markers
 
-link.map(list(tgw.qtl,yield.qtl), genoRxK, list.col = list(q.col =
+link.map(list(rktgw.qtl,rkyld.qtl), genoRxK, list.col = list(q.col =
 rep(gray(0.8), 2), t.col = "black", mcol = "black"), col = "gray")
 
 }

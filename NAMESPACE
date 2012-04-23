@@ -1,11 +1,29 @@
-# Default NAMESPACE created by R
-# Remove the previous line if you edit this file
+##[exports]
+export(
+cross2int,
+fix.map,
+getQTL,
+link.map,
+link.map.cross,
+link.map.default,
+link.map.wgaim,
+mergeData,
+out.stat,
+print.wgaim,
+tr.wgaim,
+qtl.pick,
+qtlTable,
+summary.wgaim,
+wgaim,
+wgaim.asreml,
+wgaim.default)
 
-# Export all names
-exportPattern(".")
+##[S3 Methods]
+S3method(summary, wgaim)
+S3method(print, wgaim)
+S3method(link.map, wgaim)
+S3method(tr, wgaim)
+S3method(link.map, cross)
+S3method(link.map, default)
+S3method(wgaim, asreml)
 
-# Import all packages listed as Imports or Depends
-import(
-  qtl,
-  lattice
-)

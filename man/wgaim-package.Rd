@@ -11,13 +11,13 @@
 \tabular{ll}{
 Package: \tab wgaim\cr
 Type: \tab Package\cr
-Version: \tab 1.3\cr
-Date: \tab 2012-08-01\cr
+Version: \tab 1.4\cr
+Date: \tab 2013-04-23\cr
 License: \tab GPL 2\cr
 }
 Welcome to version 1.x of wgaim! The documentation given in this help file is
-only brief and users should eventually consult the soon to be released vignette
-that will be a companion to version 1.0 and above.
+only brief and users should eventually consult the vignette available
+with the package by typing \code{vignette("wgaim")} at prompt.
 
 Version 1.x package highlights:
 \enumerate{
@@ -91,7 +91,7 @@ multiple traits is also possible (see \code{\link{link.map.default}})
 \references{
   Verbyla, A. P & Taylor, J. D, Verbyla, K. L (2012). RWGAIM: An efficient high
   dimensional random whole genome average (QTL) interval mapping approach.
-  \emph{Genetics Research}. Submitted.
+  \emph{Genetics Research}. \bold{94}, 291-306.
 
  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of

@@ -7,7 +7,7 @@ Converts an object of class "\code{cross}" to an object with class
 }
 \usage{
 cross2int(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE,
-     id = "id", subset = NULL, ...)
+     id = "id", subset = NULL)
 }
 \arguments{
   \item{fullgeno}{an object of class "\code{cross}" with restrictions
@@ -18,7 +18,7 @@ cross2int(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE,
     missing values are imputed according to the rules of Martinez &
     Curnow (1994) (see reference list). The default is
     "\code{MartinezCurnow}" (see Details).}
-  \item{rem.mark}{logical value. If \code{TRUE} redundant markers are deleted
+  \item{rem.mark}{logical value. If \code{TRUE} co-locating markers are deleted
     and placed in the component of the object (see Details). Defaults to
   \code{TRUE}.}
   \item{id}{a character string or name of the unique identifier for each row of genotype
@@ -26,8 +26,6 @@ cross2int(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE,
   \item{subset}{a possible character vector naming the subset of
     chromosomes to be returned. Defaults to \code{NULL} implying return
     all chromosomes.}
-  \item{\ldots}{other arguments passed to \code{read.cross()}. This are
-    useful if the map has to be re-estimated (see Details)}
 }
 \details{
 This function provides the conversion of genetic data objects that have
@@ -43,10 +41,14 @@ During the conversion process 3 important linkage map calculations are
 checked.
 \enumerate{
   \item The map may be subsetted using the \code{subset} argument
-  \item If \code{rem.mark = TRUE} then markers that are identical are removed before
-  missing values are imputed. The marker similarity is found by estimating
-  recombination fractions using \code{est.rf} from the \pkg{qtl} package.
-  The removed list is returned with the object and placed under
+  \item If \code{rem.mark = TRUE} then markers that are co-located are removed before
+  missing values are imputed. This marker similarity is determined by
+  the genetic distances that are given in the map for each linkage
+  group. If a set of markers co-locate the name of the first marker is
+  chosen and a single consensus marker is determined by coalescing the
+  genetic information from all markers in the set. A "(C)" is placed
+  after the marker name for easy identification. The markers removed
+  from each set is returned with the object and placed under
   "\code{cor.markers}" for inspection if required.
   \item Missing values are imputed according to
   the argument given by \code{missgeno}. This imputation results in a
@@ -58,11 +60,6 @@ checked.
 }
 Note: this last step is crucial as a complete set of marker or interval
 data is required for analysis with \code{wgaim}.
-
-During the conversion process, if the map requires re-estimation, it is written
-to an external file. This file is then re-read using \code{read.cross}. The
-arguments of this call to \code{read.cross}, can be actioned through
-\code{\ldots} argument of \code{cross2int}.
 
 }
 \value{
@@ -114,7 +111,7 @@ they are from.}
 wgpath <- system.file("extdata", package = "wgaim")
 genoSxT <- read.cross("csvr", file="genoSxT.csv", genotypes=c("AA","BB"),
          na.strings = c("-", "NA"), dir = wgpath)
-genoSxT <- cross2int(genoSxt, missgeno="MartinezCurnow", id = "id")
+genoSxT <- cross2int(genoSxT, missgeno="MartinezCurnow", id = "id")
 
 # plot linkage map
 

@@ -46,15 +46,15 @@ package \pkg{xtable}.
 
 ## fit wgaim models
 
-tgw.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+rktgw.qtl <- wgaim(rktgw.asf, phenoData = phenoRxK, intervalObj = genoRxK,
 merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
-yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+rkyld.qtl <- wgaim(rkyld.asf, phenoData = phenoRxK, intervalObj = genoRxK,
 merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
 ## create super table and export
 
-qtlt <- qtlTable(tgw.qtl, yield.qtl, labels = c("Conc.", "Shoot"))
+qtlt <- qtlTable(rktgw.qtl, rkyld.qtl, labels = c("Conc.", "Shoot"))
 print(xtable(qtlt), file = "superQTL.tex", include.rownames = FALSE)
 }
 }

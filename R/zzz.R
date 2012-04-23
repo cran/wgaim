@@ -1,4 +1,4 @@
-.onLoad <- function(libname, pkgname){
+.onAttach <- function(libname, pkgname){
   if(!("asreml" %in% loadedNamespaces())) {
     packageStartupMessage("ASReml-R needs to be installed before this package can be used.
 

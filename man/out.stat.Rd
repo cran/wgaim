@@ -17,8 +17,7 @@ out.stat(object, intervalObj, int = TRUE, iter = NULL, chr = NULL, stat
   \item{intervalObj}{object of class "\code{cross}" or "\code{interval}"}
   \item{int}{logical value, if \code{TRUE} then plot interval outlier
     statistics. If \code{FALSE} then plot chromosome outlier
-    statistics. This cna only be done if the analysis method for the
-    object was "\code{fixed}"}
+    statistics.}
   \item{iter}{numeric value determining which iterations will be plotted}
   \item{chr}{character vector naming the subset of chromosomes to
     plot. This can only be used when \code{int} is \code{TRUE}}
@@ -52,12 +51,12 @@ appropriate positions in each panel.
 \dontrun{
 # fit wgaim model
 
-yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+rkyld.qtl <- wgaim(rkyld.asf, phenoData = phenoRxK, intervalObj = genoRxK,
 merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
 # plot QTL interval outlier statistics
 
-out.stat(yield.qtl, genoRxK, iter = 1:5, cex = 0.4)
+out.stat(rkyld.qtl, genoRxK, iter = 1:5, cex = 0.4)
 
 }
 }
