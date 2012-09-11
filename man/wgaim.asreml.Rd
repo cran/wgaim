@@ -7,8 +7,9 @@
 }
 \usage{
 \method{wgaim}{asreml}(baseModel, phenoData, intervalObj, merge.by = NULL,
-         gen.type = "interval", method = "random", TypeI = 0.05, attempts = 5,
-         trace = TRUE, verboseLev = 0, \ldots)
+         gen.type = "interval", method = "fixed", selection = "interval",
+         breakout = -1, TypeI = 0.05, attempts = 5, trace = TRUE,
+         verboseLev = 0, \ldots)
 }
 \arguments{
   \item{baseModel}{a model object of class "\code{asreml}" usually representing
@@ -29,11 +30,19 @@
   be used in the analysis. Possibilities are "\code{interval}" and
   "\code{markers}". The default is "\code{interval}". (see Details).
 }
-\item{method}{a character string determining the type of algortithm to
+\item{method}{a character string determining the type of algorithm to
   be used in the analysis. Possibilities are "\code{random}" and
   "\code{fixed}". The default is "\code{random}". (see Details).
 }
-  \item{TypeI}{a numerical value determining the level of significance
+\item{selection}{a character string determining the type of selection
+  method that is used to select QTL in the analysis. Possibilities are "\code{interval}" and
+  "\code{chromosome}". The default is "\code{interval}". (see Details).
+}
+\item{breakout}{A numerical integer equivalent to the number of
+  iterations the algorithm performs before breaking out. The default is
+  -1 which ensures the algorithm finds all QTL.
+}
+\item{TypeI}{a numerical value determining the level of significance
     for detecting a QTL. The default is 0.05.
   }
   \item{attempts}{An integer representing the number of attempts at convergence for the fixed or
@@ -60,14 +69,28 @@ information is collated from \code{intervalObj}. If \code{gen.type =
 component of \code{intervalObj} (It should be noted that a
 "\code{marker}" analysis is less efficient than an "\code{interval}" analysis as
 it does not take into account the correlation of the marker effects in
-the specificity of the model; see Verbyla et. al, 2007).
+the specificity of the model; see Verbyla et. al (2007).
 
 The \code{method} argument in \code{wgaim.asreml} allows the user access
-to two algorithms. If \code{method = "fixed"} then the forward
-selecction algorithm uses the legacy code packaged with pre-1.0 versions
-of \pkg{wgaim}. This code uses the chromosome statistics as a guide to
-its selection of QTL. This selection process is now known to be flawed
-when small linkage groups are present. For this reason it is suggested
+to two algorithms. If \code{method = "fixed"} the algorithm
+places selected QTL as an additive set of fixed
+effects in the model as the forward selection algorithm proceeds. If \code{method = "random"}
+places selected QTL in the random part of the model as
+an additive set of random effects. This new formulation is derived in
+Verbyla et. al (2012) and should be considered experimental at this
+stage.
+
+The \code{selection} argument determines the type of selection algorithm
+for the analysis. If \code{selection = "chromosome"} then outlier
+statistics for each chromosome are calculated and the largest
+chromosome or linkage group is chosen. The largest marker/interval outlier
+statistic in this linkage group is then selected as the putative QTL. If
+\code{selection = "interval"}, only marker/interval statistics are calculated
+and the largest marker/interval is chosen as the putative QTL.
+
+Note: If a genetic map has a small number of markers on a linkage group
+then using \code{selection = "chromosome"} as the selection algorithm
+is known to be flawed (see Verbyla & Taylor, 2012). For this reason it is suggested
 that this option only be used when there are a moderate number of
 markers on each linkage group.
 
@@ -98,9 +121,9 @@ the function.
     \code{tr.wgaim} and \code{out.stat}.}
  }
  \references{
-   Verbyla, A. P & Taylor, J. D (2011). High dimensional whole genome
-   average interval mapping and a random effects formulation.
-   \emph{Theoretical and Applied Genetics}. Submitted.
+   Verbyla, A. P & Taylor, J. D, Verbyla, K. L (2012). RWGAIM: An efficient high
+  dimensional random whole genome average (QTL) interval mapping approach.
+  \emph{Genetics Research}. Submitted.
 
    Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
    Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
@@ -117,23 +140,26 @@ the function.
 \dontrun{
 # read in data
 
-data(zinc, package = "wgaim")
-data(raccas, package = "wgaim")
+data(phenoRxK, package = "wgaim")
+data(genoRxK, package = "wgaim")
 
 # subset linkage map and convert to "interval" object
 
-raccas <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
-raccas <- cross2int(raccas, missgeno = "Martinez")
+genoRxK <- subset(genoRxK, chr = c("1A", "2D1", "2D2", "3B"))
+genoRxK <- cross2int(genoRxK, missgeno = "Martinez",
+                    id = "Genotype", map.function = "kosambi")
 
 # base model
 
-zn.fm <- asreml(znconc ~ Type, random = ~ Block + id, data = zinc)
+yield.fm <- asreml(yield ~ Type, random = ~ Genotype + Row + Range,
+                   rcov = ~ ar1(Range):ar1(Row), data = phenoRxK)
 
-# find QTL's
+# find QTL
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+   merge.by = "Genotype", gen.type = "interval", method = "fixed",
+   selection = "interval", trace = "trace.txt", na.method.X = "include")
+
 }
-
 }
 \keyword{regression}

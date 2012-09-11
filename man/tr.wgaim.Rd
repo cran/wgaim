@@ -27,9 +27,9 @@ genetic variance, the likelihood without genetic variance (NULL model),
 the statistic and the p-value for the statistic.
  }
  \references{
-   Verbyla, A. P & Taylor, J. D (2011). High dimensional whole genome
-   average interval mapping and a random effects formulation.
-   \emph{Theoretical and Applied Genetics}. Submitted.
+  Verbyla, A. P & Taylor, J. D, Verbyla, K. L (2012). RWGAIM: An efficient high
+  dimensional random whole genome average (QTL) interval mapping approach.
+  \emph{Genetics Research}. Submitted.
 
    Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
    Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
@@ -42,26 +42,29 @@ the statistic and the p-value for the statistic.
 \dontrun{
 # read in data
 
-data(zinc, package = "wgaim")
-data(raccas, package = "wgaim")
+data(phenoRxK, package = "wgaim")
+data(genoRxK, package = "wgaim")
 
 # subset linkage map and convert to "interval" object
 
-raccas <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
-raccas <- cross2int(raccas, missgeno = "Martinez")
+genoRxK <- subset(genoRxK, chr = c("1A", "2D1", "2D2", "3B"))
+genoRxK <- cross2int(genoRxK, missgeno = "Martinez",
+                    id = "Genotype", map.function = "kosambi")
 
 # base model
 
-zn.fm <- asreml(znconc ~ Type, random = ~ Block + id, data = zinc)
+yield.fm <- asreml(yield ~ Type, random = ~ Genotype + Row + Range,
+                   rcov = ~ ar1(Range):ar1(Row), data = phenoRxK)
 
-# find QTL's
+# find QTL
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+   merge.by = "Genotype", gen.type = "interval", method = "fixed",
+   selection = "interval", trace = "trace.txt", na.method.X = "include")
 
 # diagnostic check
 
-tr(zn.qtl, digits = 4)
+tr(yield.qtl, digits = 4)
 }
 }
 

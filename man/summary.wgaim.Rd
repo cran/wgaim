@@ -11,8 +11,8 @@ Prints a summary of the "\code{wgaim}" object in a presentable format
 \method{print}{wgaim}(x, intervalObj, \ldots)
 }
 \arguments{
-  \item{object}{an object of class "\code{wgaim}"}
-  \item{x}{an object of class "\code{wgaim}" (see Details)}
+  \item{object}{an object of class "\code{wgaim}" (see Details)}
+  \item{x}{an object of class "\code{wgaim}"}
   \item{intervalObj}{a data structure of class "\code{cross}" or
     "\code{interval}" containing the genotypic data}
   \item{LOD}{logical value. If TRUE LOD scores for QTL are calculated, defaults to \code{TRUE}}
@@ -24,26 +24,31 @@ Prints a summary of the "\code{wgaim}" object in a presentable format
   contains vital summary information about each of the QTL
   detected.
 
-  As the WGAIM algorithm now places the selected QTL effects in a
-  separate random component term of the model, they are summarised
-  appropriately using a probablistic argument based on the conditional
-  distribution of the QTL sizes given the data (see Verbyla & Taylor,
-  2011 in References) Thus, for each QTL, a value is
-  calculated that represents the probability that the QTL size is greater
-  than zero (or less than zero if the effect is negative).
+  The summary of the QTL differs depending on the method chosen
+  in the analsyis using \code{wgaim.asreml}. If \code{method = "random"}
+  then the significance of the QTL are summarized using a probablistic
+  argument based on the conditional distribution of the QTL sizes given
+  the data (see Verbyla et. al, 2012 in References) Thus, for each
+  QTL, a value is calculated that represents the probability that the
+  QTL size is greater than zero (or less than zero if the effect is
+  negative). If \code{method = "fixed"} then the significance of the QTL is
+  summarized using a one degree of freedom Wald statistic.
 }
 \value{A summary of the QTL component of the "\code{wgaim}" object is
     printed to the screen. For each QTL detected, if an "interval"
     analysis was performed then \code{summary.wgaim} prints which
-    chromosome, name and distance of each flanking marker, size, probability and LOD
-    score (based on the random coefficient) if desired. If a "marker" analysis was performed then the
-    chromosome, name and distance of the associated marker, size, probability
-    and LOD score are printed. \code{print.wgaim} provides a narrative brief of the QTL's detected.
+    chromosome, name and distance of each flanking marker, size,
+  probability/p-value, contribution of genetic variance and LOD
+  score if desired. If a "marker" analysis was performed then the
+  chromosome, name and distance of the associated marker, size,
+  probability/p-value, contribution of genetic variance
+  and LOD score are printed. \code{print.wgaim} provides a narrative
+  brief of the QTL's detected.
 }
 \references{
-  Verbyla, A. P & Taylor, J. D (2011). High dimensional whole genome
-  average interval mapping and a random effects formulation.
-  \emph{Theoretical and Applied Genetics}. Submitted.
+  Verbyla, A. P & Taylor, J. D, Verbyla, K. L (2012). RWGAIM: An efficient high
+  dimensional random whole genome average (QTL) interval mapping approach.
+  \emph{Genetics Research}. Submitted.
 
   Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
   Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of
@@ -60,27 +65,30 @@ Prints a summary of the "\code{wgaim}" object in a presentable format
 \dontrun{
 # read in data
 
-data(zinc, package = "wgaim")
-data(raccas, package = "wgaim")
+data(phenoRxK, package = "wgaim")
+data(genoRxK, package = "wgaim")
 
 # subset linkage map and convert to "interval" object
 
-raccas <- subset(raccas, chr = c("1A1", "2D1", "4D2", "6A1"))
-raccas <- cross2int(raccas, missgeno = "Martinez")
+genoRxK <- subset(genoRxK, chr = c("1A", "2D1", "2D2", "3B"))
+genoRxK <- cross2int(genoRxK, missgeno = "Martinez",
+                    id = "Genotype", map.function = "kosambi")
 
-## base model
+# base model
 
-zn.fm <- asreml(znconc ~ Type, random = ~ Block + id, data = zinc)
+yield.fm <- asreml(yield ~ Type, random = ~ Genotype + Row + Range,
+                   rcov = ~ ar1(Range):ar1(Row), data = phenoRxK)
 
 # find QTL
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+merge.by = "Genotype", gen.type = "interval", method = "fixed",
+selection = "interval", trace = "trace.txt", na.method.X = "include")
 
 # summarise
 
-print(zn.qtl, raccasM)
-summary(zn.qtl, raccasM)
+print(yield.qtl, genoRxK)
+summary(yield.qtl, genoRxK)
 
 }
 }

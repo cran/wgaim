@@ -7,14 +7,17 @@ Neatly plots the genetic linkage map with marker locations and
 marker names.
 }
 \usage{
-\method{link.map}{cross}(object, chr, max.dist, marker.names = "markers",
+\method{link.map}{cross}(object, chr, chr.dist, marker.names = "markers",
      tick = FALSE, squash = TRUE, m.cex = 0.6, \ldots)
 }
 \arguments{
   \item{object}{object of class "\code{cross}"}
   \item{chr}{character string naming the subset of chromosomes to plot}
-  \item{max.dist}{a numerical value in cM determining the distance the
-    genetic map should be subsetted by}
+  \item{chr.dist}{a list containing named elements "\code{start}" and
+    "\code{end}" containing the start and end distances in cM the
+    genetic map should be subsetted by. Each of these may also be
+    a vector of distances equal to the length of the number of linkage
+    groups to be plotted.}
   \item{marker.names}{a character string naming the type of marker
     information to plot. If "\code{dist}" then distances names
     plotted alongside each chromosome on the left. If "\code{markers}"
@@ -32,10 +35,10 @@ marker names.
 }
 \details{
 This plotting procedure provides a neater visual display of the
-chromosomes without marker names overlapping vertically. The plotting region will
-adjust itself to ensure that all marker names are in the region. For
-this reason the value for "\code{m.cex}" is passed to
-"\code{text}" and should be manipulated until an aesthetic genetic map is reached.
+chromosomes without marker names overlapping vertically. The plotting
+region will adjust itself to ensure that all marker names are in the region. For
+this reason the value for "\code{m.cex}" is passed to "\code{text}" and
+should be manipulated until an aesthetic genetic map is reached.
 
 For large maps with many chromosomes, marker names and adjacent
 chromosomes will overlap horizontally. For the interest of readability
@@ -61,8 +64,16 @@ desired result.
 \author{Julian Taylor}
 \seealso{\code{\link{link.map.wgaim}}}
 \examples{
-data(raccas, package = "wgaim")
-link.map(raccas, cex = 0.5)
+
+data(genoSxT, package = "wgaim")
+
+## plot linkage map with marker names
+
+link.map(genoSxT, cex = 0.5)
+
+## plot linkage map with distances
+
+link.map(genoSxT, cex = 0.5, marker.names = "dist")
 
 }
 \keyword{hplot}

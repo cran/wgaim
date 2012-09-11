@@ -7,7 +7,7 @@ marker names and highlights QTL's with their associated flanking markers
 for multiple traits obtained from a list of \code{wgaim} fits.
 }
 \usage{
-\method{link.map}{default}(object, intervalObj, chr, max.dist, marker.names
+\method{link.map}{default}(object, intervalObj, chr, chr.dist, marker.names
     = "markers", list.col = list(q.col = rainbow(length(object)),
     m.col = "red", t.col = rainbow(length(object))), list.cex =
     list(m.cex = 0.6, t.cex = 0.6), trait.labels = NULL, tick = FALSE, \ldots)
@@ -16,8 +16,11 @@ for multiple traits obtained from a list of \code{wgaim} fits.
   \item{object}{a list object with elements inheriting the class "\code{wgaim}"}
   \item{intervalObj}{object of class "\code{cross}" or "\code{interval}"}
   \item{chr}{character string naming the subset of chromosomes to plot}
-  \item{max.dist}{a numerical value in cM determining the distance the
-    genetic map should be subsetted by}
+  \item{chr.dist}{a list containing named elements "\code{start}" and
+    "\code{end}" containing the start and end distances in cM the
+    genetic map should be subsetted by. Each of these may also be
+    a vector of distances equal to the length of the number of linkage
+    groups to be plotted.}
   \item{marker.names}{a character string naming the type of marker
     information to plot. If "\code{dist}" then distances names
     plotted alongside each chromosome on the left. If "\code{markers}"
@@ -63,8 +66,9 @@ location of the QTL. This character can be changed using the usual
 arguments such as \code{pch} or \code{cex} that are passed through the
 usual \ldots argument.
 }
-\value{For a set of "interval" analyses, the genetic linkage map is plotted with shaded QTL regions and
-  highlighted flanking markers. For a set of "marker" analyses, symbols are
+\value{For a set of "interval" analyses, the genetic linkage map is
+  plotted with shaded QTL regions and highlighted flanking markers. For
+  a set of "marker" analyses, symbols are
   placed at the QTL locations and the markers are highlighted.
 }
 \references{
@@ -79,29 +83,29 @@ usual \ldots argument.
 \dontrun{
 ## fit wgaim models
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccasS,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+tgw.qtl <- wgaim(tgw.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
-zn.qtlS <- wgaim(zn.fmS, phenoData = zinc, intervalObj = raccasS,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
 ## plot QTL intervals
 
 # matching rainbow QTL color and trait names, red flanking markers
 # (default) and gray background markers.
 
-link.map(list(zn.qtl,zn.qtlS), raccas, col = "gray")
+link.map(list(tgw.qtl,yield.qtl), genoRxK, col = "gray")
 
 # rainbow QTL color and black trait names, red flanking markers
 # (default) and gray background markers.
 
-link.map(list(zn.qtl,zn.qtlS), raccas, list.col = list(t.col =
+link.map(list(tgw.qtl,yield.qtl), genoRxK, list.col = list(t.col =
 "black", m.col = "red"), col = "gray")
 
 # monochromatic plot: gray QTLs, black trait names, black flanking
 # markers and gray background markers
 
-link.map(list(zn.qtl,zn.qtlS), raccas, list.col = list(q.col =
+link.map(list(tgw.qtl,yield.qtl), genoRxK, list.col = list(q.col =
 rep(gray(0.8), 2), t.col = "black", mcol = "black"), col = "gray")
 
 }

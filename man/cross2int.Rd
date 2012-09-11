@@ -7,7 +7,7 @@ Converts an object of class "\code{cross}" to an object with class
 }
 \usage{
 cross2int(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE,
-     id = "id", subset = NULL)
+     id = "id", subset = NULL, ...)
 }
 \arguments{
   \item{fullgeno}{an object of class "\code{cross}" with restrictions
@@ -26,6 +26,8 @@ cross2int(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE,
   \item{subset}{a possible character vector naming the subset of
     chromosomes to be returned. Defaults to \code{NULL} implying return
     all chromosomes.}
+  \item{\ldots}{other arguments passed to \code{read.cross()}. This are
+    useful if the map has to be re-estimated (see Details)}
 }
 \details{
 This function provides the conversion of genetic data objects that have
@@ -37,19 +39,31 @@ only two genotypes. \code{fullgeno} is checked for the
 the class structure \code{c("bc","cross")}. If this is not present an
 error is returned.
 
-During the conversion process, missing values are imputed according to
-the argument given by \code{missgeno}. This imputation results in a
-complete version of the marker data for each chromosome which is then
-used to create the interval data "\code{intval}". The complete
-marker data for each chromosome can be obtained from the "\code{imputed.data}" element of the
-returned list. It is therefore also possible to perform whole genome \emph{marker}
-analysis using \code{wgaim}. See \code{wgaim.asreml} for more details.
+During the conversion process 3 important linkage map calculations are
+checked.
+\enumerate{
+  \item The map may be subsetted using the \code{subset} argument
+  \item If \code{rem.mark = TRUE} then markers that are identical are removed before
+  missing values are imputed. The marker similarity is found by estimating
+  recombination fractions using \code{est.rf} from the \pkg{qtl} package.
+  The removed list is returned with the object and placed under
+  "\code{cor.markers}" for inspection if required.
+  \item Missing values are imputed according to
+  the argument given by \code{missgeno}. This imputation results in a
+  complete version of the marker data for each chromosome which is then
+  used to create the interval data "\code{intval}". The complete
+  marker data for each chromosome can be obtained from the "\code{imputed.data}" element of the
+  returned list. It is therefore also possible to perform whole genome \emph{marker}
+  analysis using \code{wgaim}. See \code{wgaim.asreml} for more details.
+}
+Note: this last step is crucial as a complete set of marker or interval
+data is required for analysis with \code{wgaim}.
 
-If \code{rem.mark = TRUE} then markers that are identical are removed before
-missing values are imputed. The marker similarity is found by estimating
-recombination fractions using \code{est.rf} from the \pkg{qtl} package.
-The removed list is returned with the object and placed under
-"\code{cor.markers}" for inspection if required.
+During the conversion process, if the map requires re-estimation, it is written
+to an external file. This file is then re-read using \code{read.cross}. The
+arguments of this call to \code{read.cross}, can be actioned through
+\code{\ldots} argument of \code{cross2int}.
+
 }
 \value{
 a list of class "\code{cross}" that also inherits the class
@@ -58,7 +72,8 @@ a list of class "\code{cross}" that also inherits the class
   This is a list with elements named by the corresponding names of the
   chromosomes. Each chromosome is itself a list with six
   elements: "\code{data}" is the actual estimated map matrix with rows
-  as individuals named by "\code{id}" and markers as columns; "\code{map}" is a vector of marker positions on the
+  as individuals named by "\code{id}" and markers as columns;
+  "\code{map}" is a vector of marker positions on the
   corresponding chromosome; "\code{imputed.data}" is identical to "\code{data}"
   matrix but with all NA's replaced by imputed values according to the
   rules of "\code{missgeno}"; "\code{dist}" contains the genetic
@@ -97,13 +112,13 @@ they are from.}
 # identifier for each unique row
 
 wgpath <- system.file("extdata", package = "wgaim")
-racca <- read.cross("csvr", file="raccas.csv", genotypes=c("AA","AB"),
+genoSxT <- read.cross("csvr", file="genoSxT.csv", genotypes=c("AA","BB"),
          na.strings = c("-", "NA"), dir = wgpath)
-raccas <- cross2int(racca, missgeno="MartinezCurnow", id = "id")
+genoSxT <- cross2int(genoSxt, missgeno="MartinezCurnow", id = "id")
 
 # plot linkage map
 
-link.map(raccas, cex = 0.5)
+link.map(genoSxT, cex = 0.5)
 
 }
 }

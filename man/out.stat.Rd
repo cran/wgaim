@@ -1,15 +1,16 @@
 \name{out.stat}
 \alias{out.stat}
-\title{Plot the interval outlier statistics from
+\title{Plot the blups or interval outlier statistics from
   specififed iteratons of wgaim}
 \description{
-Plots the interval outlier statistics for
-specified iterations of \code{wgaim}. The interval statistics appear as
+Plots the interval blups/outlier statistics for
+specified iterations of \code{wgaim}. The interval blups/outlier statistics appear as
 a trace across the genome separated by chromosome and appropriately
 spaced by their distances.
 }
 \usage{
-out.stat(object, intervalObj, int = TRUE, iter = NULL, chr = NULL, \ldots)
+out.stat(object, intervalObj, int = TRUE, iter = NULL, chr = NULL, stat
+= "os", \ldots)
 }
 \arguments{
   \item{object}{object of class "\code{wgaim}"}
@@ -19,13 +20,16 @@ out.stat(object, intervalObj, int = TRUE, iter = NULL, chr = NULL, \ldots)
     statistics. This cna only be done if the analysis method for the
     object was "\code{fixed}"}
   \item{iter}{numeric value determining which iterations will be plotted}
-  \item{chr}{character string naming the subset of chromosomes to
+  \item{chr}{character vector naming the subset of chromosomes to
     plot. This can only be used when \code{int} is \code{TRUE}}
+  \item{stat}{character string naming the value to be
+    plotted. Default is "os" (outlier statistics). Other option is
+    "blups" for the scaled empirical blups calculated during each iteration}
   \item{\ldots}{arguments passed to "\code{xyplot}" or "\code{barchart}"
   (with some restrictions, see Details)}
 }
 \details{
-By default the interval outlier statistics are plotted in separate
+By default the interval blups/outlier statistics are plotted in separate
 panels for each iteration in a set layout of 5 rows and one column. This
 cannot be adjusted and users should not attempt to use the \code{layout}
 argument. Viewing multiple pages can be done by specifying the
@@ -34,7 +38,7 @@ appropriate iterations using the \code{iter} argument.
 The set of QTL are obtained from the model and printed on the plot in their
 appropriate positions in each panel.
 }
-\value{The outlier statistics are plotted in a trellis panel plot.
+\value{The blups/outlier statistics are plotted in a trellis panel plot.
 }
 \references{
   Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
@@ -48,12 +52,12 @@ appropriate positions in each panel.
 \dontrun{
 # fit wgaim model
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
 # plot QTL interval outlier statistics
 
-out.stat(zn.qtl, raccas, iter = 1:5, cex = 0.4)
+out.stat(yield.qtl, genoRxK, iter = 1:5, cex = 0.4)
 
 }
 }

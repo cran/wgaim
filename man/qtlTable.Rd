@@ -19,7 +19,7 @@ qtlTable(\ldots, intervalObj = NULL, labels = NULL, columns = "all")
   \item{columns}{this can be either a numeric vector determining which columns of the QTL
     summaries should be outputted or "\code{all}" for all
     columns. The default is "\code{all}".}
-  \item{\ldots}{a numeric vector determining whcih columsn fo the
+  \item{\ldots}{a numeric vector determining which columms of the
     summary should be returned (see Details)}
 }
 \details{
@@ -28,7 +28,7 @@ other using the models in \ldots from left to right. An extra column is
 created on the left hand side of the stacked table for the trait names
 given in the \code{labels} argument. The names are only placed in the
 first element of each table with NAs for the rest of the elements. This
-then allows simple exportation to spreadsheet packages or with the LaTeX
+then allows simple exporting to spreadsheet packages or with the R/LaTeX
 package \pkg{xtable}.
 }
 \value{A \code{data.frame} object with stacked QTL summaries
@@ -46,15 +46,15 @@ package \pkg{xtable}.
 
 ## fit wgaim models
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+tgw.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
-zn.qtlS <- wgaim(zn.fmS, phenoData = zinc, intervalObj = raccas,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
 ## create super table and export
 
-qtlt <- qtlTable(zn.fm, zn.fmS, labels = c("Conc.", "Shoot"))
+qtlt <- qtlTable(tgw.qtl, yield.qtl, labels = c("Conc.", "Shoot"))
 print(xtable(qtlt), file = "superQTL.tex", include.rownames = FALSE)
 }
 }

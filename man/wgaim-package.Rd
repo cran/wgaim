@@ -11,8 +11,8 @@
 \tabular{ll}{
 Package: \tab wgaim\cr
 Type: \tab Package\cr
-Version: \tab 1.1\cr
-Date: \tab 2011-10-24\cr
+Version: \tab 1.3\cr
+Date: \tab 2012-08-01\cr
 License: \tab GPL 2\cr
 }
 Welcome to version 1.x of wgaim! The documentation given in this help file is
@@ -21,29 +21,33 @@ that will be a companion to version 1.0 and above.
 
 Version 1.x package highlights:
 \enumerate{
-\item The inclusion of high dimensional genetic data
+\item The inclusion of high dimensional genetic data.
 \item Users have a choice of whole genome marker or interval analysis.
-\item Selection and estimation of QTL effects occurs using the
-implementation of Verbyla & Taylor (2011).
+\item Selection and estimation of QTL effects using the
+implementation of Verbyla et. al (2012).
 }
 
 Deprecated functions:
 \enumerate{
-\item \code{read.interval}: \code{cross2int} is the conversion function
-that should be used.
-\item \code{wmerge}: This function is not required as the genetic
-data is merged within the wgaim call.
+\item \code{read.interval}: This function used to read in and convert genetic
+marker data to "interval" objects ready for analysis by
+\code{wgaim}. Users are now directed to use \code{read.cross} from the
+\pkg{qtl} package and convert to an "interval" object by using the
+conversion function \code{cross2int}.
+\item \code{wmerge}: This function seamlessly merged phenotypic and
+"interval" genetic data. This is not required as the
+merging is contained within the wgaim call.
 }
 
 This package builds on the \pkg{qtl} package of Broman by including
 additional functions for whole genome QTL analysis of a full linkage map
 using linear mixed models.
 
-The package provides a user friendly function \code{\link{cross2int}} for the conversion
-of "\code{cross}" objects created using \code{read.cross} in Bromans
-\pkg{qtl} package into an "\code{interval}" object or use in
-\pkg{wgaim}. Specifically, \code{cross2int} performs additional
-calculations for imputing missing values on each of the
+The package provides a user friendly function \code{\link{cross2int}}
+for the conversion of "\code{cross}" objects created using
+\code{read.cross} in Bromans \pkg{qtl} package into an "\code{interval}"
+object or use in \pkg{wgaim}. Specifically, \code{cross2int} performs additional
+calculations to impute missing marker values on each of the
 chromosomes across the full linkage map and also provides users with
 genetic distances and recombination fractions for the intervals. The
 returned object retains the class structure
@@ -51,13 +55,14 @@ of an object created with \code{read.cross} and thus allows further
 use with the \pkg{qtl} package if desired.
 
 The package also provides a very neat graphical display of the
-chromosomes of a "\code{cross}" object. The method function \code{\link{link.map}} displays
-the full or subsetted linkage map according to chromosome or distance as
-well as displays non-overlapping marker names on the right hand side.
+chromosomes of a "\code{cross}" object. The method function
+\code{\link{link.map}} displays the full or subsetted linkage map
+according to chromosome or distance as well as displays non-overlapping
+marker names on the right hand side.
 
-Modelling of the QTL's is achieved using the functions
+QTL analysis of the is achieved using the function
 \code{\link{wgaim}} which, as its first argument, requires an \code{asreml}
-base model. Version 1.0 of \pkg{wgaim} allows users to include high
+base model. Version 1.x of \pkg{wgaim} allows users to include high
 dimensional genetic components in a \code{wgaim} analysis (See
 \code{wgaim.asreml} for more details or the soon to be
 released vignette companion to this version). For convenience the
@@ -71,7 +76,8 @@ each forward step of the algorithm.
 
 Summary and print methods are available for the returned "\code{wgaim}"
 object and provide users with a detailed report on the QTL, their
-size, their flanking markers and significance (including LOD score). The
+size, their flanking markers, significance (including LOD score if
+desired) and approximate contribution to the genetic variance. The
 returned "\code{wgaim}" object may also be plotted using the method
 function \code{\link{link.map}}. This function plots the full linkage map
 subsetted for chromosome and distance as well as provides shaded
@@ -83,9 +89,9 @@ multiple traits is also possible (see \code{\link{link.map.default}})
   Maintainer: Julian Taylor <julian.taylor@csiro.au>
 }
 \references{
-  Verbyla, A. P & Taylor, J. D (2011). High dimensional whole genome
-  average interval mapping and a random effects formulation.
-  \emph{Theoretical and Applied Genetics}. Submitted.
+  Verbyla, A. P & Taylor, J. D, Verbyla, K. L (2012). RWGAIM: An efficient high
+  dimensional random whole genome average (QTL) interval mapping approach.
+  \emph{Genetics Research}. Submitted.
 
  Julian Taylor, Arunas Vebyla (2011). R Package wgaim: QTL Analysis in
  Bi-Parental Populations Using Linear Mixed Models. \emph{Journal of

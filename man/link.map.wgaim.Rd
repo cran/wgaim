@@ -7,7 +7,7 @@ marker names and highlights QTL's with their associated flanking markers
 obtained from a fit to \code{wgaim}.
 }
 \usage{
-\method{link.map}{wgaim}(object, intervalObj, chr, max.dist,
+\method{link.map}{wgaim}(object, intervalObj, chr, chr.dist,
     marker.names = "markers", list.col = list(q.col = "light blue",
     m.col = "red", t.col = "light blue"), list.cex = list(t.cex = 0.6,
     m.cex = 0.6), trait.labels = NULL, tick = FALSE, \ldots)
@@ -16,8 +16,11 @@ obtained from a fit to \code{wgaim}.
   \item{object}{object of class "\code{wgaim}"}
   \item{intervalObj}{object of class "\code{cross}" or "\code{interval}"}
   \item{chr}{character string naming the subset of chromosomes to plot}
-  \item{max.dist}{a numerical value in cM determining the distance the
-    genetic map should be subsetted by}
+  \item{chr.dist}{a list containing named elements "\code{start}" and
+    "\code{end}" containing the start and end distances in cM the
+    genetic map should be subsetted by. Each of these may also be
+    a vector of distances equal to the length of the number of linkage
+    groups to be plotted.}
    \item{marker.names}{a character string naming the type of marker
     information to plot. If "\code{dist}" then distances names
     plotted alongside each chromosome on the left. If "\code{markers}"
@@ -43,10 +46,11 @@ from a fit to \code{wgaim}. If the linkage map is subsetted and QTL
 regions fall outside the remaining map a warning will be given that
 the QTL have been omitted from the display.
 
-The \code{list.col} arguments \code{q.col}, \code{m.col} and \code{t.col} have been added for personal
-colour highlighting of the QTL regions, flanking markers and trait names. For greater
-flexibility the procedure may also be given the usual \code{col}
-argument that will be passed to the other markers.
+The \code{list.col} arguments \code{q.col}, \code{m.col} and
+\code{t.col} have been added for personal colour highlighting of the QTL
+regions, flanking markers and trait names. For greater flexibility the
+procedure may also be given the usual \code{col} argument that will be
+passed to the other markers.
 
 The \code{list.cex} argument can be used to manipulate the character expansion of
 the marker names using \code{m.cex} or the character expansion of the
@@ -72,12 +76,12 @@ arguments such as \code{pch} or \code{cex} that are passed through the
 \dontrun{
 # fit wgaim model
 
-zn.qtl <- wgaim(zn.fm, phenoData = zinc, intervalObj = raccas,
-merge.by = "id", trace = "trace.txt", na.method.X = "include")
+yield.qtl <- wgaim(yield.fm, phenoData = phenoRxK, intervalObj = genoRxK,
+merge.by = "Genotype", trace = "trace.txt", na.method.X = "include")
 
 # plot QTL
 
-link.map(zn.qtl, raccas, list.col = list(m.col = "red"), col = "gray")
+link.map(yield.qtl, genoRxK, list.col = list(m.col = "red"), col = "gray")
 
 }
 }
