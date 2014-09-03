@@ -1,9 +1,9 @@
 \name{genoSxT}
 \alias{genoSxT}
 \docType{data}
-\title{Genotypic marker data for Sunco x Tasman double haploid
+\title{Genotypic marker data for Sunco x Tasman doubled haploid
   population in R/qtl format}
-\description{Linkage map marker data for the Sunco x Tasman double haploid
+\description{Linkage map marker data for the Sunco x Tasman doubled haploid
   population in the form of an R/qtl object.}
 \usage{data(phenoSxT)}
 \format{

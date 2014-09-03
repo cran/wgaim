@@ -48,11 +48,11 @@ link.map(genoSxT, names(nmar(genoSxT)), m.cex = 0.5,
 
 st.qtlN <- wgaim(st.fmN, phenoData = phenoSxT, intervalObj = genoSxT,
     merge.by = "id", gen.type = "interval", method = "fixed",
-    selection = "interval", trace = "nullmodel.txt")
+    selection = "interval", trace = "nullmodel.txt", exclusion.window = 0)
 
 st.qtlF <- wgaim(st.fmF, phenoData = phenoSxT, intervalObj = genoSxT,
     merge.by = "id", gen.type = "interval", method = "fixed",
-    selection = "interval", trace = "fullmodel.txt")
+    selection = "interval", trace = "fullmodel.txt", exclusion.window = 0)
 
 # diagnostics
 
@@ -103,7 +103,7 @@ link.map.default(list(st.qtlF, st.qtlN), genoSxT, marker.names = "dist",
 
 st.qtlFM <- wgaim(st.fmF, phenoData = phenoSxT, intervalObj = genoSxT,
                  merge.by = "id", gen.type = "marker", method = "fixed",
-                 selection = "interval", trace = "fullmodel.txt", breakout = 1)
+                 selection = "interval", trace = "fullmodel.txt", exclusion.window = 0)
 
 summary(st.qtlFM, genoSxT, LOD = TRUE)
 out.stat(st.qtlFM, genoSxT, int = TRUE, iter = 1, cex = 0.6, stat = "blups")
@@ -115,7 +115,7 @@ link.map(st.qtlFM, genoSxT, marker.names = "dist", trait.labels = "Full", cex = 
 
 st.qtlNM <- wgaim(st.fmN, phenoData = phenoSxT, intervalObj = genoSxT,
                  merge.by = "id", gen.type = "marker", method = "fixed",
-                 selection = "interval", trace = "nullmodel.txt")
+                 selection = "interval", trace = "nullmodel.txt", exclusion.window = 0)
 
 # linkage map with QTL
 
@@ -129,13 +129,13 @@ link.map.default(list(st.qtlFM, st.qtlNM), genoSxT, marker.names = "dist",
     "light blue"), m.col = "red", t.col = c("red", "light blue")),
     list.cex = list(t.cex = 0.9, m.cex = 0.7), col = "black", cex = 2, pch = 16)
 
-####### Random formulation
+####### Random formulation and exclusion window
 
 out.stat(st.qtlF, genoSxT, int = TRUE, iter = c(2,3,11), cex = 0.6, chr = c("6B","7D"), stat = "blups")
 
 st.qtlFR <- wgaim(st.fmF, phenoData = phenoSxT, intervalObj = genoSxT,
                  merge.by = "id", gen.type = "interval", method = "random",
-                 selection = "interval", trace = "fullmodel.txt")
+                 selection = "interval", trace = "fullmodel.txt", exclusion.window = 20)
 
 summary(st.qtlFR, genoSxT)
 

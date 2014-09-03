@@ -3,12 +3,12 @@
 \docType{data}
 \title{Phenotypic RAC875 x Kukri trial data frame}
 \description{Phenotype data arising from a field trial of a
-  Double Haploid population involving a crossing of the wheat varities
+  Doubled Haploid population involving a crossing of the wheat varities
   RAC875 and Kukri}
 \usage{data(phenoRxK)}
 \format{This data relates to a field trial conducted in 2007 at the
   Roseworthy Cmapus of the University of Adelaide. The trial consisted
-  of 2 replicates of 367 Double Haploid lines from a cross between wheat
+  of 2 replicates of 367 Doubled Haploid lines from a cross between wheat
   varieties RAC875 and Kukri. The DH lines, the parents
   (RAC875, Kukri) and commercial varieties (Co5693*E002, DRYSDALE, EXCALIBUR,
   KRICHAUFF, WYALKATCHEM, YITPI) were randomly allocated to 756
@@ -19,7 +19,7 @@
     \item{Genotype:}{A 375 level factor containing a unique
       identification for the wheat varieties involved in the experiment.}
     \item{Type:}{A factor of four levels indexing the wheat varieties
-      (Double Haploid, RAC875, Kukri, Other) where Other consist of
+      (Doubled Haploid, RAC875, Kukri, Other) where Other consist of
       (Co5693*E002, DRYSDALE, EXCALIBUR, KRICHAUFF, WYALKATCHEM, YITPI)}
     \item{id:}{A factor of 183 levels uniquely identifying the wheat
       varieties involved in the experiment.}

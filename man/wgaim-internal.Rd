@@ -13,14 +13,16 @@
 \alias{v.init}
 \title{Internal wgaim functions}
 \description{
-These are internal \code{wgaim} functions that are not intended to be directly called by the user
+These are internal \code{wgaim} functions that are not intended to be
+directly called by the user
 }
 \usage{
 fix.map(full.data, rd = 3)
 getQTL(object, intervalObj)
 addiag(x = 1, di = 0, nrow.arg, ncol.arg = n)
 miss.q(theta, chr)
-qtl.pick(asr, intervalObj, asdata, gen.type, selection, state, verboseLev)
+qtl.pick(asr, intervalObj, asdata, gen.type, selection,
+        exclusion.window, state, verboseLev)
 mergeData(phenoData, geneticData, by)
 error.code(ec = NULL)
 v.modify(model)

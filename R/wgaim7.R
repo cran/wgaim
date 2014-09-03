@@ -5,7 +5,8 @@ wgaim.default <- function(baseModel, ...)
   stop("Currently the only supported method is \"asreml\"")
 
 wgaim.asreml <- function (baseModel, phenoData, intervalObj, merge.by = NULL,
-gen.type = "interval", method = "fixed", selection = "interval", breakout = -1, TypeI = 0.05, attempts = 5, trace = TRUE, verboseLev = 0, ...)
+gen.type = "interval", method = "fixed", selection = "interval", exclusion.window = 20,
+breakout = -1, TypeI = 0.05, attempts = 5, trace = TRUE, verboseLev = 0, ...)
 {
     if (missing(phenoData))
         stop("phenoData is a required argument.")
@@ -76,7 +77,6 @@ gen.type = "interval", method = "fixed", selection = "interval", breakout = -1, 
     add.form <-  as.formula(paste("~ idv(grp('ints')) + ."))
     cat("\nRandom Effects Interval/Marker Model Iteration (1):\n")
     cat("============================================\n")
-#    add.qtl$call$data <- quote(asdata)
     add.qtl <- updateWgaim(add.qtl, asdata, attempts, random. = add.form, ...)
     update <- FALSE
     which.i <- 1
@@ -85,7 +85,6 @@ gen.type = "interval", method = "fixed", selection = "interval", breakout = -1, 
     qtl <- c()
     repeat {
         if (update) {
-       #     baseModel$call$data <- add.qtl$call$data <- quote(asdata)
             add.qtl$call$group$ints <- cnt
             qtl.form <- formula(paste("~ . +", qtl.x, sep = ""))
             if(method == "random"){
@@ -124,8 +123,7 @@ gen.type = "interval", method = "fixed", selection = "interval", breakout = -1, 
             break
         if (mD$p > mD$q)
             add.qtl$xtra <- mD$xtra
-#        add.qtl$call$data <- quote(asdata)
-        pick <- qtl.pick(add.qtl, intervalObj, asdata, gen.type, selection, state, verboseLev)
+        pick <- qtl.pick(add.qtl, intervalObj, asdata, gen.type, selection, exclusion.window, state, verboseLev)
         state <- pick$state
         cnt <- pick$cnt
         qtl[which.i] <- pick$qtl
@@ -133,10 +131,11 @@ gen.type = "interval", method = "fixed", selection = "interval", breakout = -1, 
         ochr[[which.i]] <- pick$ochr
         blups[[which.i]] <- pick$blups
         if(breakout > 0){
-            if(breakout == which.i)
+            if(breakout == which.i){
+                qtl <- qtl[1:(which.i - 1)]
                 break
+            }
         }
-#        chr.int <- unlist(lapply(strsplit(qtl[which.i], "\\."), function(el) el[2:3]))
         qtl.x <- gsub("Chr\\.", "X.", qtl[which.i])
         if (is.null(add.qtl$xtra))
             phenoData[qtl.x] <- mD$asdata[qtl[which.i]] * 100
@@ -152,7 +151,6 @@ gen.type = "interval", method = "fixed", selection = "interval", breakout = -1, 
         gD <- geneticData[, -gbind]
         mD <- mergeData(phenoData, gD, merge.by)
         cnt <- mD$cnt
-        qtls.cnt <- mD$qtls.cnt
         asdata <- mD$asdata
         which.i <- which.i + 1
         update <- TRUE
@@ -174,12 +172,13 @@ gen.type = "interval", method = "fixed", selection = "interval", breakout = -1, 
             qtl.list$effects <- cl[[which.i - 1]]
             qtl.list$veffects <- vl[[which.i - 1]]
         }
-        qtl.list$iterations <- breakout
+        qtl.list$iterations <- which.i - 1
+        qtl.list$breakout <- ifelse(breakout != -1, TRUE, FALSE)
     }
-    baseModel <- envDestruct(add.qtl, keep = c("asdata", "qtl.list","ftrace"))
     data.name <- paste(as.character(baseModel$call$fixed[2]), "data", sep = ".")
+    assign(data.name, asdata, envir = parent.frame())
+    baseModel <- envDestruct(add.qtl, keep = c("data.name", "qtl.list","ftrace"))
     baseModel$call$data <- as.name(data.name)
-    assign(data.name, asdata, envir = environment(baseModel$call$fixed))
     baseModel$QTL <- qtl.list
     class(baseModel) <- c("wgaim", "asreml")
     baseModel
@@ -214,21 +213,49 @@ v.init <- function (term, G.param){
 envDestruct <- function(model, keep){
     fixed <- deparse(model$fixed.formula)
     random <- deparse(model$random.formula)
-    sparse <- deparse(model$sparse.formula)
+    if(!is.null(sparse <- model$call$sparse)){
+        if("mv" %in% all.vars(sparse))
+            sparse <- update.formula(sparse, ~ . - mv)
+        if(is.numeric(sparse[[2]])) sparse <- NULL
+        else sparse <- deparse(sparse)
+    }
     if("rcov" %in% names(model$call))
         rcov <- deparse(model$call$rcov)
     lsp <- ls(parent.frame(n = 1))
     rm(list = lsp[!(lsp %in% keep)], pos = parent.frame(n = 1))
     model$call$fixed <- formula(fixed)
     model$call$random <- formula(random)
-    model$call$sparse <- formula(sparse)
     model$fixed.formula <- parse(text = fixed)[[1]]
     model$random.formula <- parse(text = random)[[1]]
-    model$random.formula <- parse(text = sparse)[[1]]
+    if(!is.null(sparse)){
+        model$call$sparse <- formula(sparse)
+        model$sparse.formula <- parse(text = sparse)[[1]]
+    }
     if("rcov" %in% names(model$call))
         rcov <- formula(rcov)
     model
 }
+
+## envDestruct <- function(model, keep){
+##     fixed <- deparse(model$fixed.formula)
+##     random <- deparse(model$random.formula)
+##     sparse <- deparse(model$sparse.formula)
+##     if(!is.null(sparse.call <- model$call$sparse))
+##         sparse.call <- deparse(model$call$sparse)
+##     if("rcov" %in% names(model$call))
+##         rcov <- deparse(model$call$rcov)
+##     lsp <- ls(parent.frame(n = 1))
+##     rm(list = lsp[!(lsp %in% keep)], pos = parent.frame(n = 1))
+##     model$call$fixed <- formula(fixed)
+##     model$call$random <- formula(random)
+##     model$call$sparse <- sparse.call
+##     model$fixed.formula <- parse(text = fixed)[[1]]
+##     model$random.formula <- parse(text = random)[[1]]
+##     model$sparse.formula <- parse(text = sparse)[[1]]
+##     if("rcov" %in% names(model$call))
+##         rcov <- formula(rcov)
+##     model
+## }
 
 mergeData <- function(phenoData, geneticData, by) {
 
@@ -243,7 +270,7 @@ mergeData <- function(phenoData, geneticData, by) {
         mats <- geneticData[whg,int.cnt]
         tmat <- t(mats)
         xsvd <- svd(crossprod(tmat))
-        xsvd.half <- xsvd.half <- t(xsvd$v %*% (t(xsvd$u) * sqrt(xsvd$d)))
+        xsvd.half <- t(xsvd$v %*% (t(xsvd$u) * sqrt(xsvd$d)))
         xsvd.inv <- solve(xsvd.half)
         xtra <- tmat %*% xsvd.inv
         xsvd.df <- as.data.frame(xsvd.half)
@@ -265,8 +292,60 @@ mergeData <- function(phenoData, geneticData, by) {
         asdata[, cnt] <- asdata[, cnt]/100
     }
     qtls.cnt <- grep("X\\.", names(asdata))
-    invisible(list(asdata=asdata, cnt=cnt, qtls.cnt = qtls.cnt, p=p, q=q, xtra=xtra))
+    invisible(list(asdata=asdata, cnt=cnt, p=p, q=q, xtra=xtra))
 }
+
+## mergeData <- function(phenoData, geneticData, by) {
+
+##     int.cnt <- 2:dim(geneticData)[2]
+##     p <- length(int.cnt)
+##     whg <- !duplicated(phenoData[,by])
+##     whg <- geneticData[, by] %in% phenoData[whg,by]
+##     ids <- as.character(geneticData[whg, by])
+##     q <- length(ids)
+##     phenoData <- cbind(ord = 1:nrow(phenoData), phenoData)
+##     if(p > q) {
+##         mats <- geneticData[whg,int.cnt]
+##         tmat <- t(mats)
+##         mm <- crossprod(tmat)
+##         xsvd <- svd(crossprod(tmat))
+##         sq <- xsvd$d^2
+##         sqp <- sq/sum(sq)
+##         ee <- - (1/log(length(sqp)))*sum(sqp*log(sqp))
+##         print(ee)
+## #        stop()
+## #        print(cumsum(sqp))
+## #        stop()
+##         xsvd.half <- xsvd$u[,c(1:30)] %*% diag(sqrt(xsvd$d[1:30]))
+##         xsvd.inv <- xsvd$u[,c(1:30)] %*% diag(1/sqrt(xsvd$d[1:30]))
+## #        xsvd.half <- xsvd$u[,1:175] %*% diag(sqrt(xsvd$d[1:175]))
+## #        mm <- xsvd$u[,1:75] %*% diag(xsvd$d[1:75]) %*% t(xsvd$v[,1:75])
+##         q <- 30
+## #        xsvd.half <- <- t(xsvd$v %*% (t(xsvd$u) * sqrt(xsvd$d)))
+## #        xsvd.inv <- solve(mm)
+##         xtra <- tmat %*% xsvd.inv
+##         xsvd.df <- as.data.frame(xsvd.half)
+##         names(xsvd.df) <- paste("Tint.", 1:q, sep = "")
+##         xsvd.df[[by]] <- ids
+##         asdata <- merge(phenoData, xsvd.df, all.x = TRUE, by = by)
+##         asdata <- asdata[order(asdata$ord), ]
+##         asdata <- asdata[, -2]
+##         cnt <- grep("Tint\\.", names(asdata))
+##         asdata[, cnt] <- asdata[, cnt]/100
+##     }
+##     else {
+##         xtra <- NULL
+##         asdata <- merge(phenoData, geneticData, by.x = by, by.y = by, all.x = TRUE, all.y = FALSE)
+##         asdata <- asdata[order(asdata$ord), ]
+##         asdata <- asdata[, -2]
+##         dnams <- names(asdata)
+##         cnt <- grep("Chr\\.", dnams)
+##         asdata[, cnt] <- asdata[, cnt]/100
+##     }
+##     qtls.cnt <- grep("X\\.", names(asdata))
+##     invisible(list(asdata=asdata, cnt=cnt, p=p, q=q, xtra=xtra))
+## }
+
 
 updateWgaim <- function(object, asdata, attempts, ...){
 #  attempts <- list(...)$attempts
@@ -366,7 +445,7 @@ summary.wgaim <- function (object, intervalObj, LOD = TRUE, ...)
     zrat <- qtls/sqrt(object$QTL$veffects * sigma2)
     adds <- round(perc.var,1)
     if (object$QTL$method == "random") {
-        Pvalue <- 1 - pchisq(zrat^2, df=1)
+        Pvalue <- (1 - pchisq(zrat^2, df=1))/2
         adds <- cbind(round(Pvalue, 3), adds)
         addn <- c("Prob", "% Var")
     }
@@ -474,8 +553,9 @@ tr.wgaim <- function (object, iter = 1:length(object$QTL$effects), diag.out = TR
     }
     if(object$QTL$method == "random"){
         pvals <- lapply(zrl, function(el, len, dig) {
-            pv <- 1- pnorm(-el)
-            pv[el > 0] <- 1 - pv[el > 0]
+            pv <- (1 - pchisq(el^2, df=1))/2
+ #           pv <- 1 - pnorm(-el)
+ #           pv[el > 0] <- 1 - pv[el > 0]
             pv <- round(pv, dig)
             c(pv, rep(NA, len - length(pv)))
     }, len = length(zrl), dig = dig)
@@ -507,10 +587,10 @@ tr.wgaim <- function (object, iter = 1:length(object$QTL$effects), diag.out = TR
     }
 }
 
-qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, state, verboseLev) {
+qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, exclusion.window, state, verboseLev) {
 
     ## is it (p > q) or (q > p)?
-    asr$call$data <- quote(asdata)
+#    asr$call$data <- quote(asdata)
     sigma2 <- asr$sigma2
     if(names(asr$gammas.con[length(asr$gammas.con)]) == "Fixed")
         sigma2 <- 1
@@ -528,7 +608,7 @@ qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, state, verbo
 
         pv <- predict(asr, classify = "ints",
                       only = "ints",
-                      levels=qlist, vcov=TRUE, maxiter=1)
+                      levels=qlist, vcov=TRUE, data = asdata, maxiter=1)
 
         ## covariance matrix
 
@@ -625,7 +705,16 @@ qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, state, verbo
     tint[as.logical(state)] <- oint
     blups[as.logical(state)] <- atilde/sqrt(vatilde)
     oint <- tint
-    state[nint] <- 0
+    ## exclusion window
+    schr <- sapply(strsplit(names(state), "\\."), "[", 2)
+    wnams <- names(state)[schr %in% wchr]
+    inums <- as.numeric(sapply(strsplit(wnams, "\\."),"[", 3))
+    dists <- intervalObj$geno[[wchr]]$map
+    if(gen.type == "interval")
+        dists <- dists[2:length(dists)] - diff(dists)/2
+    dists <- dists[inums]
+    exc <- wnams[abs(dists - dists[wint]) <= exclusion.window]
+    state[exc] <- 0
     message("Found QTL on chromosome ", wchr, " ", gen.type, " ", wint)
     list(state = state, qtl = qtl, ochr = ochr, oint = oint, blups = blups)
 }
@@ -1129,12 +1218,19 @@ link.map.default <- function (object, intervalObj, chr, chr.dist, marker.names =
     if (!is.null(trait.labels)) {
         if (length(trait.labels) != length(object))
             stop("Length of trait labels does not equal number of models specified.")
-        trait <- rep(trait.labels, times = len)
     }
-    else {
-        trait <- unlist(lapply(object, function(el) rep(as.character(el$call$fixed[[2]]),
-            length(el$QTL$effects))))
+    else trait.labels <- unlist(lapply(object, function(el) as.character(el$call$fixed[[2]])))
+    tt <- table(trait.labels)
+    tt <- tt[tt > 1]
+    if(length(tt)){
+        tn <- names(tt)
+        for(i in length(tt)) {
+            whl <- trait.labels %in% tn[i]
+            trait.labels[whl] <- paste(trait.labels[whl], 1:tt[i], sep = "")
+        }
     }
+    print(trait.labels)
+    trait <- rep(trait.labels, times = len)
     dlist$QTL$effects <- unlist(effects)
     class(dlist) <- "wgaim"
     if (length(list.col$q.col) != length(object)) {
@@ -1281,8 +1377,6 @@ out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, 
         k <- k + 1
       }
 }
-
-
 
 
 

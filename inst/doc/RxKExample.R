@@ -4,6 +4,8 @@
 
 ####### base model and diagnostics
 
+wgpath <- system.file("extdata", package = "wgaim")
+
 data(phenoRxK, package = "wgaim")
 
 rkyld.asi <- asreml(yld ~ Type, random = ~ Genotype + Rep,
@@ -39,7 +41,7 @@ xyplot(resid(rkyld.asf) ~ Row | Range, data = phenoRxK, type = "b",
 
 data(genoRxK, package = "wgaim")
 genoRxK <- read.cross("csvr", file="genoRxK.csv", genotypes=c("AA","BB"),
-        dir = getwd(), na.strings = c("-", "NA"))
+        dir = wgpath, na.strings = c("-", "NA"))
 
 names(genoRxK)
 genoRxK$pheno[["Genotype"]][1:18]
@@ -58,20 +60,21 @@ genoRxK$geno$"3D"$intval[200:208,1:6]
 
 ####### QTL analysis and breakout
 
-rkyld.qtl1 <- wgaim(rkyld.asf, phenoData = phenoRxK, intervalObj = genoRxK,
-merge.by = "Genotype", trace = TRUE, na.method.X = "include", breakout = 1)
+rkyld.qtl0 <- wgaim(rkyld.asf, phenoData = phenoRxK, intervalObj = genoRxK,
+merge.by = "Genotype", trace = TRUE, na.method.X = "include", breakout = 1,
+exclusion.window = 0)
 
-out.stat(rkyld.qtl1, genoRxK, iter = 1, stat= "blups")
-out.stat(rkyld.qtl1, genoRxK, iter = 1, stat= "os")
+out.stat(rkyld.qtl0, genoRxK, iter = 1, stat= "blups")
+out.stat(rkyld.qtl0, genoRxK, iter = 1, stat= "os")
 
-asreml:::summary.asreml(rkyld.qtl1)$varcomp
+asreml:::summary.asreml(rkyld.qtl0)$varcomp
 
 ####### QTL analysis and summary
 
 rkyld.qtl1 <- wgaim(rkyld.asf, phenoData = phenoRxK, intervalObj = genoRxK,
-merge.by = "Genotype", trace = TRUE, na.method.X = "include")
+merge.by = "Genotype", trace = TRUE, na.method.X = "include", exclusion.window = 0)
 
-summary(rkyld.qtl, genoRxK, LOD = FALSE)
-out.stat(rkyld.qtl, genoRxK, iter = 1:5, stat= "blups")
+summary(rkyld.qtl1, genoRxK, LOD = FALSE)
+out.stat(rkyld.qtl1, genoRxK, iter = 1:5, stat= "blups")
 
 ############ end script

@@ -1,9 +1,9 @@
 \name{genoRxK}
 \alias{genoRxK}
 \docType{data}
-\title{Genotypic marker data for RAC875 x Kukri double haploid
+\title{Genotypic marker data for RAC875 x Kukri doubled haploid
   population in R/qtl format}
-\description{Linkage map marker data for the RAC875 x Kukri double haploid
+\description{Linkage map marker data for the RAC875 x Kukri doubled haploid
   population in the form of an R/qtl object.}
 \usage{data(phenoSxT)}
 \format{

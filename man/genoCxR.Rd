@@ -1,9 +1,9 @@
 \name{genoCxR}
 \alias{genoCxR}
 \docType{data}
-\title{Genotypic marker data for Cascades x RAC875-2 double haploid
+\title{Genotypic marker data for Cascades x RAC875-2 doubled haploid
   population in R/qtl format}
-\description{Linkage map marker data for the Cascades x RAC875-2 double
+\description{Linkage map marker data for the Cascades x RAC875-2 doubled
   haploid population in the form of an R/qtl object.
 }
 \usage{data(genoCxR)}

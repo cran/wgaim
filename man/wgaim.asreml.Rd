@@ -8,8 +8,8 @@
 \usage{
 \method{wgaim}{asreml}(baseModel, phenoData, intervalObj, merge.by = NULL,
          gen.type = "interval", method = "fixed", selection = "interval",
-         breakout = -1, TypeI = 0.05, attempts = 5, trace = TRUE,
-         verboseLev = 0, \ldots)
+         exclusion.window = 20, breakout = -1, TypeI = 0.05, attempts = 5,
+         trace = TRUE, verboseLev = 0, \ldots)
 }
 \arguments{
   \item{baseModel}{a model object of class "\code{asreml}" usually representing
@@ -38,8 +38,11 @@
   method that is used to select QTL in the analysis. Possibilities are "\code{interval}" and
   "\code{chromosome}". The default is "\code{interval}". (see Details).
 }
-\item{breakout}{A numerical integer equivalent to the number of
-  iterations the algorithm performs before breaking out. The default is
+\item{exclusion.window}{For each QTL, the distance in centirmorgans
+  around each QTL that is excluded from further analysis.
+}
+\item{breakout}{A numerical integer equivalent to the iteration
+  the algorithm breaks out. The default is
   -1 which ensures the algorithm finds all QTL before halting. (see
   Details)
 }
@@ -100,15 +103,16 @@ that this option only be used when there are a moderate number of
 markers on each linkage group.
 
 Users can now break out of the algorithm using the \code{breakout}
-argument. If a numerical value greater than zero then the forward
+argument. If a numerical value greater than zero is given, then the forward
 selection algorithm breaks at the iteration equal to that value and
-returns the collected QTL information to this point. This includes
+returns the collected information to this point. This includes
 fixed/random QTL effects, diaganostic components such as interval/marker
 BLUPs and outlier statistics as well as the trace components of the
-algorithm. It should be noted that the algorithm breaks out before QTL
-have been moved to the fixed/random effects and estimated. Therefore a
-value of 1 will not return any estimated QTL effects but it will return
-diagnostic information of the first whole genome random effect model.
+algorithm. It should be noted that the algorithm breaks out before a QTL
+has been moved to the fixed/random effects and estimated. Therefore a
+positive integer, say \code{n} will not return an estimate of the nth
+QTL but it will return whole genome QTL effects and associated
+diagnostics for the nth iteration.
 
 It is recommended that \code{trace = "file.txt"} be used to pipe the
 sometimes invasive tracing of \code{asreml} licensing and fitting

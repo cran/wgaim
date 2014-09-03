@@ -1,6 +1,6 @@
 \name{news}
 \title{Release information for wgaim}
-\section{Changes in version 1.4-0}{
+\section{Changes in version 1.4-x}{
 \subsection{README}{
   \itemize{
   \item Since this is the first documented NEWS release on the wgaim package
@@ -10,16 +10,20 @@
 }
   \subsection{NEW FEATURES}{
     \itemize{
-      \item The package now includes a vignette that is accessible using
-      the usual vignette commands (see \code{?vignette}). The vignette
-      contains WGAIM theory and two thorough examples that show the
+      \item The package now includes a PDF reference manual that is accessible by
+      navigating to the \code{"doc"} directory of the package. This can
+      be found on any operating system using the command
+      
+      \code{> system.file("doc", package = "wgaim")}
+      
+      The reference manual contains WGAIM theory and two thorough examples that show the
       features of the package. It also contains a "casual walk through"
-      the package providing the user with series of 5 steps to a succesful wgaim
+      the package providing the user with a series of 5 steps to a successful wgaim
       analysis.
       \item The package now includes three fully documented phenotypic
       and genotypic data sets for users to explore. Two of these three
-      have been used in the vignette and scripts that follow the
-      vignette are available under the "doc" directory of the package.
+      have been used in the manual and scripts that follow the
+      examples in the manual are available under the "doc" directory of the package.
       \item The package now provides very efficient whole genome QTL analysis of high
       dimensional genetic marker data. All genetic marker data is passed
       into \code{wgaim.asreml()} through the \code{"intervalObj"}
@@ -46,6 +50,7 @@
 }
 \subsection{BUG FIXES}{
   \itemize{
+    \item Fixed a long standing scoping issue with different versions of ASReml-R.
     \item Fixed an elusive problem that causes wgaim models to increase the size
     of your .RData upon saving. This is actually an inherent problem with
     using model formula within a function a returning the subsequent

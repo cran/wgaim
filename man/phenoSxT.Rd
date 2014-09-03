@@ -3,11 +3,11 @@
 \docType{data}
 \title{Phenotypic Sunco x Tasman trial data frame}
 \description{Phenotype data arising from a two-phase experiment
-  involving a Double Haploid population from a crossing of the wheat varities
+  involving a Doubled Haploid population from a crossing of the wheat varities
   Sunco and Tasman}
 \usage{data(phenoSxT)}
 \format{This data relates to a two-phase epxeriment involving a set of 175
-  Double Haploid lines. In the first phase DH lines were randomly
+  Doubled Haploid lines. In the first phase DH lines were randomly
   allocated to plots using a complete block design with additional plots
   containing the parents (Sunco, Tasman) as well as commercial lines
   (Frame, Janz, Krichauff, Machete, RAC820, Trident). The trial was laid
@@ -21,7 +21,7 @@ consists of 456 rows with 11 columns. These columns are
     \item{Expt:}{A one level of factor containing a unique
       identification for the experiment.}
     \item{Type:}{A factor of nine levels indexing the wheat variety
-      (Double Haploid, Sunco, Tasman, (Frame, Janz, Krichauff, Machete, RAC820, Trident))}
+      (Doubled Haploid, Sunco, Tasman, (Frame, Janz, Krichauff, Machete, RAC820, Trident))}
     \item{id:}{A factor of 183 levels uniquely identifying the wheat
       varieties involved in the experiment.}
     \item{Range:}{A factor of 12 numeric levels indexing the field Range.}
