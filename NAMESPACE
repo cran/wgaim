@@ -31,4 +31,5 @@ S3method(tr, wgaim)
 S3method(link.map, cross)
 S3method(link.map, default)
 S3method(wgaim, asreml)
+S3method(wgaim, default)
 

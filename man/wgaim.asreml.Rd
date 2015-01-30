@@ -166,8 +166,7 @@ data(genoRxK, package = "wgaim")
 # subset linkage map and convert to "interval" object
 
 genoRxK <- subset(genoRxK, chr = c("1A", "2D1", "2D2", "3B"))
-genoRxK <- cross2int(genoRxK, missgeno = "Martinez",
-                    id = "Genotype", map.function = "kosambi")
+genoRxK <- cross2int(genoRxK, missgeno = "Martinez", id = "Genotype")
 
 # base model
 

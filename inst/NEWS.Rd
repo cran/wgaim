@@ -13,9 +13,9 @@
       \item The package now includes a PDF reference manual that is accessible by
       navigating to the \code{"doc"} directory of the package. This can
       be found on any operating system using the command
-      
+
       \code{> system.file("doc", package = "wgaim")}
-      
+
       The reference manual contains WGAIM theory and two thorough examples that show the
       features of the package. It also contains a "casual walk through"
       the package providing the user with a series of 5 steps to a successful wgaim
@@ -50,6 +50,11 @@
 }
 \subsection{BUG FIXES}{
   \itemize{
+    \item \code{cross2int()} now accepts R/qtl objects with cross type
+    \code{"bc","dh","rilsef"}.
+    \item Fixed an issue with the internal function \code{fix.map()} that
+    allowed some co-located sets of markers to appear in the final
+    reduced linkage map.
     \item Fixed a long standing scoping issue with different versions of ASReml-R.
     \item Fixed an elusive problem that causes wgaim models to increase the size
     of your .RData upon saving. This is actually an inherent problem with

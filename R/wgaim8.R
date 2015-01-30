@@ -236,27 +236,6 @@ envDestruct <- function(model, keep){
     model
 }
 
-## envDestruct <- function(model, keep){
-##     fixed <- deparse(model$fixed.formula)
-##     random <- deparse(model$random.formula)
-##     sparse <- deparse(model$sparse.formula)
-##     if(!is.null(sparse.call <- model$call$sparse))
-##         sparse.call <- deparse(model$call$sparse)
-##     if("rcov" %in% names(model$call))
-##         rcov <- deparse(model$call$rcov)
-##     lsp <- ls(parent.frame(n = 1))
-##     rm(list = lsp[!(lsp %in% keep)], pos = parent.frame(n = 1))
-##     model$call$fixed <- formula(fixed)
-##     model$call$random <- formula(random)
-##     model$call$sparse <- sparse.call
-##     model$fixed.formula <- parse(text = fixed)[[1]]
-##     model$random.formula <- parse(text = random)[[1]]
-##     model$sparse.formula <- parse(text = sparse)[[1]]
-##     if("rcov" %in% names(model$call))
-##         rcov <- formula(rcov)
-##     model
-## }
-
 mergeData <- function(phenoData, geneticData, by) {
 
     int.cnt <- 2:dim(geneticData)[2]
@@ -721,7 +700,7 @@ qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, exclusion.wi
 
 cross2int <- function(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE, id = "id",
                       subset = NULL){
-  if(!inherits(fullgeno, "bc"))
+  if(!(class(fullgeno)[1] %in% c("bc","dh","riself")))
     stop("This function is restricted to populations containing only two genotypes.")
   fullgeno <- drop.nullmarkers(fullgeno)
   if(!(id %in% names(fullgeno$pheno)))
@@ -790,7 +769,8 @@ fix.map <- function (full.data, rd = 3)
             clist <- do.call("rbind", lapply(clist[1:(length(clist) - 1)], function(cl)
                                              t(combn(cl, 2))))
             dlist <- split.data.frame(t(el$data), pm)
-            dmark <- lapply(dlist[1:(length(dlist) - 1)], function(dl) {
+  #          dmark <- lapply(dlist[1:(length(dlist) - 1)], function(dl) {
+            dmark <- lapply(dlist, function(dl) {
                 con <- apply(dl, 2, function(ell){
                     ell <- ell[!is.na(ell)]
                     if(length(ellu <- unique(ell)) > 1 | !length(ellu))
@@ -820,7 +800,6 @@ fix.map <- function (full.data, rd = 3)
     newmap$cor.markers <- cor.mark
     newmap
 }
-
 
 addiag <- function(x = 1, di = 0, nrow.arg, ncol.arg = n)
 {
@@ -1013,8 +992,6 @@ link.map.cross <- function(object, chr, chr.dist, marker.names = "markers", tick
     title("Genetic Map")
   invisible(list(mt = mt, map = map, chrpos = chrpos))
 }
-
-#savePlot("qtlplot", "pdf")
 
 link.map.wgaim <- function (object, intervalObj, chr, chr.dist, marker.names = "markers",
     list.col = list(q.col = "light blue", m.col = "red", t.col = "light blue"),
@@ -1377,6 +1354,8 @@ out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, 
         k <- k + 1
       }
 }
+
+
 
 
 

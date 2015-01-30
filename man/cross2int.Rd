@@ -10,8 +10,8 @@ cross2int(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE,
      id = "id", subset = NULL)
 }
 \arguments{
-  \item{fullgeno}{an object of class "\code{cross}" with restrictions
-    (see Details)}
+  \item{fullgeno}{an R/qtl cross object that inherits one of the class
+    structures \code{"bc","dh","riself"}.}
   \item{missgeno}{a character string determining how missing values in
     the linkage map should be imputed. If "\code{Broman}", then missing values are
     imputed according to Bromans rules. If "\code{MartinezCurnow}" then
@@ -30,12 +30,10 @@ cross2int(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE,
 \details{
 This function provides the conversion of genetic data objects that have
 already been created using \code{read.cross} from Bromans \pkg{qtl}
-package to "\code{interval}" objects ready for use with \code{wgaim}.
-
-User should be aware that this function is restricted to populations with
-only two genotypes. \code{fullgeno} is checked for the
-the class structure \code{c("bc","cross")}. If this is not present an
-error is returned.
+package to "\code{interval}" objects ready for use with
+\code{wgaim}. User should be aware that this function is restricted to
+populations with two genotypic states. Therefore \code{fullgeno} must
+inherit one of the class structures \code{"bc","dh","riself"}.
 
 During the conversion process 3 important linkage map calculations are
 checked.
