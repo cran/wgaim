@@ -763,14 +763,15 @@ fix.map <- function (full.data, rd = 3)
         dmark <- clist <- NA
         if(length(um) != length(emap)){
             pm <-  pmatch(emap, um, duplicates.ok = TRUE)
-            nums <- as.numeric(names(table(pm))[table(pm) > 1])
+            pmt <- table(pm)
+            nums <- as.numeric(names(table(pm))[pmt > 1])
             pm[!(pm %in% nums)] <- nums[length(nums)] + 1
             clist <- split(names(emap), pm)
-            clist <- do.call("rbind", lapply(clist[1:(length(clist) - 1)], function(cl)
+            if(any(pmt == 1)) len <- length(clist) - 1 else len <- length(clist)
+            clist <- do.call("rbind", lapply(clist[1:len], function(cl)
                                              t(combn(cl, 2))))
             dlist <- split.data.frame(t(el$data), pm)
-  #          dmark <- lapply(dlist[1:(length(dlist) - 1)], function(dl) {
-            dmark <- lapply(dlist, function(dl) {
+            dmark <- lapply(dlist[1:len], function(dl) {
                 con <- apply(dl, 2, function(ell){
                     ell <- ell[!is.na(ell)]
                     if(length(ellu <- unique(ell)) > 1 | !length(ellu))

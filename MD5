@@ -1,6 +1,6 @@
-62462dd5148687c32ee0286321cef78a *DESCRIPTION
+4acf60fe9f9a49699032403a43632db0 *DESCRIPTION
 c93629dadaea788fc233d8e6af5d4899 *NAMESPACE
-9f24f34deeae0bbe6fcdfc403142a7b1 *R/wgaim8.R
+14a69de61d7fa27ecbe3e01a15ce07d3 *R/wgaim8.R
 223500a555fee66eefdb847611a9ce54 *R/zzz.R
 69729679d9b3af734856be2f810d80bb *data/genoCxR.RData
 aadc5cf3439ab020a43547e88cc80567 *data/genoRxK.RData
@@ -13,7 +13,7 @@ a2401323fcc3638cc8e4c2c399c3d6d7 *data/phenoRxK.RData
 00e7125ae2d4b042cf2dda601d6b31b2 *inst/doc/CxRExample.R
 ec1d413e5f32219208560620fb1d42f8 *inst/doc/RxKExample.R
 8cafeadfd003575dcd03dc3a1dee70b5 *inst/doc/SxTExample.R
-d46bcba8293b2e9c2c27554d26a347a0 *inst/doc/wgaim.pdf
+d89fba757410425e10fcc267c6d88abd *inst/doc/wgaim.pdf
 6280e25ffc1e2b4c9484479aca645dc4 *inst/extdata/genoCxR.csv
 971df2819ded051fc08ffb06c841751d *inst/extdata/genoRxK.csv
 260822c37c2d136e739466c4e4ca8e3a *inst/extdata/genoSxT.csv
