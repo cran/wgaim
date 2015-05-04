@@ -10,6 +10,11 @@
 }
   \subsection{NEW FEATURES}{
     \itemize{
+      \item Outlier statistics and BLUPs can now be retruned for any
+      iteration of the algorithm regardless of whether a
+      significant QTL is detected. This now allows easy access to
+      outlier statistics annd BLUPs for the first iteration when no QTL
+      are detected (see the \code{breakout} argument of \code{wgaim.asreml}. 
       \item The package now includes a PDF reference manual that is accessible by
       navigating to the \code{"doc"} directory of the package. This can
       be found on any operating system using the command
@@ -50,6 +55,8 @@
 }
 \subsection{BUG FIXES}{
   \itemize{
+    \item Fixed a bug that caused wgaim to crash with very recent
+      versions of asreml (04/05/2015). 
     \item \code{cross2int()} now accepts R/qtl objects with cross type
     \code{"bc","dh","rilsef"}.
     \item Fixed an issue with the internal function \code{fix.map()} that

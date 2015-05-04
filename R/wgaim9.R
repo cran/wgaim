@@ -119,23 +119,26 @@ breakout = -1, TypeI = 0.05, attempts = 5, trace = TRUE, verboseLev = 0, ...)
         baseLogL <- baseModel$loglik
         stat <- 2 * (add.qtl$loglik - baseLogL)
         dmat[which.i, ] <- c(baseLogL, add.qtl$loglik, stat, (1 - pchisq(stat, 1))/2)
-        if (stat < qchisq(1 - 2 * TypeI, 1))
-            break
         if (mD$p > mD$q)
             add.qtl$xtra <- mD$xtra
         pick <- qtl.pick(add.qtl, intervalObj, asdata, gen.type, selection, exclusion.window, state, verboseLev)
         state <- pick$state
         cnt <- pick$cnt
-        qtl[which.i] <- pick$qtl
         oint[[which.i]] <- pick$oint
         ochr[[which.i]] <- pick$ochr
         blups[[which.i]] <- pick$blups
+        if (stat < qchisq(1 - 2 * TypeI, 1))
+            break
         if(breakout > 0){
             if(breakout == which.i){
-                qtl <- qtl[1:(which.i - 1)]
                 break
             }
         }
+        qtl[which.i] <- pick$qtl
+        sqtl <- strsplit(qtl[which.i], "\\.")
+        wchr <- sapply(sqtl, "[", 2)
+        wint <- sapply(sqtl, "[", 3)
+        message("Found QTL on chromosome ", wchr, " ", gen.type, " ", wint)
         qtl.x <- gsub("Chr\\.", "X.", qtl[which.i])
         if (is.null(add.qtl$xtra))
             phenoData[qtl.x] <- mD$asdata[qtl[which.i]] * 100
@@ -156,23 +159,21 @@ breakout = -1, TypeI = 0.05, attempts = 5, trace = TRUE, verboseLev = 0, ...)
         update <- TRUE
     }
     qtl.list <- list()
+    qtl.list$selection <- selection
+    qtl.list$method <- method
+    qtl.list$type <- gen.type
+    qtl.list$diag$blups <- blups
+    qtl.list$diag$oint <- oint
+    if (selection == "chromosome")
+         qtl.list$diag$ochr <- ochr
     if (length(qtl)) {
-        qtl.list$selection <- selection
-        qtl.list$method <- method
-        qtl.list$type <- gen.type
         qtl.list$qtl <- qtl
-        qtl.list$diag$dmat <- dmat
-        qtl.list$diag$vl <- vl
+        qtl.list$effects <- cl[[which.i - 1]]
+        qtl.list$veffects <- vl[[which.i - 1]]
         qtl.list$diag$cl <- cl
-        qtl.list$diag$blups <- blups
-        qtl.list$diag$oint <- oint
-        if (selection == "chromosome")
-            qtl.list$diag$ochr <- ochr
-        if(breakout != 1){
-            qtl.list$effects <- cl[[which.i - 1]]
-            qtl.list$veffects <- vl[[which.i - 1]]
-        }
-        qtl.list$iterations <- which.i - 1
+        qtl.list$diag$vl <- vl
+        qtl.list$diag$lik.mat <- dmat
+        qtl.list$iterations <- which.i
         qtl.list$breakout <- ifelse(breakout != -1, TRUE, FALSE)
     }
     data.name <- paste(as.character(baseModel$call$fixed[2]), "data", sep = ".")
@@ -524,7 +525,7 @@ tr.wgaim <- function (object, iter = 1:length(object$QTL$effects), diag.out = TR
     sigma2 <- object$sigma2
     if(names(object$gammas.con[length(object$gammas.con)]) == "Fixed")
         sigma2 <- 1
-    zrl <- lapply(1:length(object$QTL$effects), function(i, cl, vl, sigma2)
+    zrl <- lapply(1:length(cl), function(i, cl, vl, sigma2)
                   cl[[i]]/(sqrt(vl[[i]]*sigma2)), cl = cl, vl = vl, sigma2 = sigma2)
     if (any(ret <- is.na(pmatch(iter, 1:length(zrl))))) {
         warning("\"iter\" values outside expected range .. using ones that are in iteration range")
@@ -545,7 +546,7 @@ tr.wgaim <- function (object, iter = 1:length(object$QTL$effects), diag.out = TR
         }, len = length(zrl), dig = dig)
     }
     qtlmat <- do.call("rbind", pvals)
-    qnams <- gsub("X\\.", "", names(object$QTL$effects))
+    qnams <- gsub("X\\.", "", names(cl))
     dimnames(qtlmat) <- list(paste("Iter", 1:length(zrl), sep = "."),
         qnams)
     cat("\nIncremental QTL P-value Matrix.\n")
@@ -558,7 +559,7 @@ tr.wgaim <- function (object, iter = 1:length(object$QTL$effects), diag.out = TR
     if (diag.out) {
         cat("\nLikelihood Ratio Test of QTL Variance Component.\n")
         cat("===========================================\n")
-        dmat <- round(as.matrix(object$QTL$diag$dmat), dig)
+        dmat <- round(as.matrix(object$QTL$diag$lik.mat), dig)
         dimnames(dmat)[[1]] <- paste("Iter", 1:(length(zrl) +
             1), sep = ".")
         dmat[, 4][dmat[, 4] < 0.001] <- "<0.001"
@@ -586,7 +587,7 @@ qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, exclusion.wi
         names(qlist) <- "ints"
 
         pv <- predict(asr, classify = "ints",
-                      only = "ints",
+                      only = "grp(\"ints\")",
                       levels=qlist, vcov=TRUE, data = asdata, maxiter=1)
 
         ## covariance matrix
@@ -694,7 +695,6 @@ qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, exclusion.wi
     dists <- dists[inums]
     exc <- wnams[abs(dists - dists[wint]) <= exclusion.window]
     state[exc] <- 0
-    message("Found QTL on chromosome ", wchr, " ", gen.type, " ", wint)
     list(state = state, qtl = qtl, ochr = ochr, oint = oint, blups = blups)
 }
 
@@ -1207,7 +1207,6 @@ link.map.default <- function (object, intervalObj, chr, chr.dist, marker.names =
             trait.labels[whl] <- paste(trait.labels[whl], 1:tt[i], sep = "")
         }
     }
-    print(trait.labels)
     trait <- rep(trait.labels, times = len)
     dlist$QTL$effects <- unlist(effects)
     class(dlist) <- "wgaim"
@@ -1273,8 +1272,8 @@ out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, 
     if (!is.null(iter)) {
         if (is.numeric(iter))
             iter <- as.integer(iter)
-        if (any(iter > ln))
-            stop("\"iter\" is greater than the number of QTL found in the analysis.")
+        if (any(iter > (ln + 1)))
+            stop("\"iter\" is greater than the number of analysis iterations.")
         oint <- oint[iter]
         ochr <- ochr[iter]
         ln <- length(iter)

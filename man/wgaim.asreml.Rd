@@ -42,7 +42,7 @@
   around each QTL that is excluded from further analysis.
 }
 \item{breakout}{A numerical integer equivalent to the iteration
-  the algorithm breaks out. The default is
+ where the algorithm breaks out. The default is
   -1 which ensures the algorithm finds all QTL before halting. (see
   Details)
 }
@@ -111,8 +111,7 @@ BLUPs and outlier statistics as well as the trace components of the
 algorithm. It should be noted that the algorithm breaks out before a QTL
 has been moved to the fixed/random effects and estimated. Therefore a
 positive integer, say \code{n} will not return an estimate of the nth
-QTL but it will return whole genome QTL effects and associated
-diagnostics for the nth iteration.
+QTL but it will return the outlier statistics or BLUPs for the nth iteration.
 
 It is recommended that \code{trace = "file.txt"} be used to pipe the
 sometimes invasive tracing of \code{asreml} licensing and fitting

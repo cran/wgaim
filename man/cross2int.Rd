@@ -18,8 +18,8 @@ cross2int(fullgeno, missgeno = "MartinezCurnow", rem.mark = TRUE,
     missing values are imputed according to the rules of Martinez &
     Curnow (1994) (see reference list). The default is
     "\code{MartinezCurnow}" (see Details).}
-  \item{rem.mark}{logical value. If \code{TRUE} co-locating markers are deleted
-    and placed in the component of the object (see Details). Defaults to
+  \item{rem.mark}{logical value. If \code{TRUE} co-locating marker sets
+    are condensed to form consensus markers (see Details). Defaults to
   \code{TRUE}.}
   \item{id}{a character string or name of the unique identifier for each row of genotype
     data (see Details). Defaults to "\code{id}"}
@@ -39,8 +39,9 @@ During the conversion process 3 important linkage map calculations are
 checked.
 \enumerate{
   \item The map may be subsetted using the \code{subset} argument
-  \item If \code{rem.mark = TRUE} then markers that are co-located are removed before
-  missing values are imputed. This marker similarity is determined by
+  \item If \code{rem.mark = TRUE} then co-located marker sets are reduced
+  to form single consensus markers before missing values are
+  imputed. The marker similarity is determined by 
   the genetic distances that are given in the map for each linkage
   group. If a set of markers co-locate the name of the first marker is
   chosen and a single consensus marker is determined by coalescing the
