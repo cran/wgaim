@@ -1236,9 +1236,8 @@ out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, 
     }
     dots <- list(...)
     cex <- dots$cex
-    if (is.null(qtl <- object$QTL$qtl))
-        stop("There are no outlier statistics to plot.")
-    qtl <- gsub("Chr.","", qtl)
+ #   if (is.null(qtl <- object$QTL$qtl))
+ #       stop("There are no outlier statistics to plot.")
     if(object$QTL$type == "interval")
         dist <- lapply(intervalObj$geno, function(el) {
                         if(length(el$map) == 1) {
@@ -1253,7 +1252,7 @@ out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, 
                                tel <- c(0.05, el$dist)
                            names(tel)[1] <- names(el$map)[1]
                            tel })
-    ln <- length(qtl)
+    ln <- length(object$QTL$diag$oint)
     ochr <- object$QTL$diag$ochr
     if(stat == "os"){
         y.lab <- "outlier statistic"
@@ -1267,8 +1266,8 @@ out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, 
     cnam <- gsub("Chr.", "", cnam)
     inam <- names(oint[[1]])
     inam <- strsplit(gsub("Chr.", "", inam), "\\.")
-    chn <- unlist(lapply(inam, function(el) el[1]))
-    inn <- unlist(lapply(inam, function(el) el[2]))
+    chn <- sapply(inam, "[", 1)
+    inn <- sapply(inam, "[", 2)
     if (!is.null(iter)) {
         if (is.numeric(iter))
             iter <- as.integer(iter)
@@ -1299,9 +1298,6 @@ out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, 
         sep = "")
     dint$its <- factor(its, levels = unique(its))
     dint$step <- rep(1:length(labs), length(iter))
-    qtln <- paste(qtl[iter], unique(dint$itn), sep = ":")
-    td <- dint[paste(paste(dint$chn, dint$inn, sep = "."), dint$itn,
-        sep = ":") %in% qtln, ]
     prow <- length(unique(dint$its))
     if (prow > 5)
         prow <- 5
@@ -1328,33 +1324,39 @@ out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, 
         names(dchr)[1] <- "chr"
         bc <- print(barchart(chr ~ chn | its, data = dchr, ylab = "outlier statistic",
             xlab = "Chromosome", layout = c(1, prow), ...))
-        wchr <- dchr$chr[paste(dchr$chn, dchr$itn, sep = ":") %in%
-            paste(td$chn, td$itn, sep = ":")]
-        td$int <- wchr
-        td$whc <- pmatch(td$chn, as.character(unique(dchr$chn)),
-            duplicates.ok = TRUE)
-        names(td)[1] <- "chr"
     }
-    panel.locs <- as.vector(trellis.currentLayout())
-    panel.locs <- panel.locs[panel.locs > 0]
-    rows <- round(mod(as.vector(panel.locs), 5), 1)
-    k <- 1
-    for (wh in panel.locs) {
-        trellis.focus("panel", row = rows[k], column = 1, highlight = TRUE)
-        tq <- paste(td$chn[td$itn == wh], td$inn[td$itn == wh],
-            sep = ".")
-        if (int)
-            panel.text(td$dist[td$itn == wh], td$int[td$itn ==
-                wh], label = tq, col = 1, cex = cex)
-        else {
-            lims <- bc$y.limits[2] - bc$y.limits[1]
-            panel.text(td$whc[td$itn == wh], td$chr[td$itn ==
-                wh] + 0.1 * lims, label = tq, col = 1, cex = cex)
+    if(!is.null(qtl <- object$QTL$qtl)){
+        qtl <- gsub("Chr.","", qtl)
+        qtln <- paste(qtl[iter], unique(dint$itn), sep = ":")
+        td <- dint[paste(paste(dint$chn, dint$inn, sep = "."), dint$itn, sep = ":") %in% qtln, ]
+        if(!int){
+            wchr <- dchr$chr[paste(dchr$chn, dchr$itn, sep = ":") %in%
+                             paste(td$chn, td$itn, sep = ":")]
+            td$int <- wchr
+            td$whc <- pmatch(td$chn, as.character(unique(dchr$chn)),
+                             duplicates.ok = TRUE)
+            names(td)[1] <- "chr"
         }
-        k <- k + 1
-      }
+        panel.locs <- as.vector(trellis.currentLayout())
+        panel.locs <- panel.locs[panel.locs > 0]
+        rows <- round(mod(as.vector(panel.locs), 5), 1)
+        k <- 1
+        for (wh in panel.locs) {
+            trellis.focus("panel", row = rows[k], column = 1, highlight = TRUE)
+            tq <- paste(td$chn[td$itn == wh], td$inn[td$itn == wh],
+                        sep = ".")
+            if (int)
+                panel.text(td$dist[td$itn == wh], td$int[td$itn ==
+                                       wh], label = tq, col = 1, cex = cex)
+            else {
+                lims <- bc$y.limits[2] - bc$y.limits[1]
+                panel.text(td$whc[td$itn == wh], td$chr[td$itn ==
+                                      wh] + 0.1 * lims, label = tq, col = 1, cex = cex)
+            }
+            k <- k + 1
+        }
+    }
 }
-
 
 
 
