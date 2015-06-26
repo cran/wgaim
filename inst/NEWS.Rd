@@ -10,7 +10,10 @@
 }
   \subsection{NEW FEATURES}{
     \itemize{
-      \item Outlier statistics and BLUPs can now be retruned for any
+      \item The forward selection algorithm has been accelerated further
+      by smart matrix decomposition of the relationship matrix. Users
+      can expect around a 35\% reduction in computation time.
+      \item Outlier statistics and BLUPs can now be returned for any
       iteration of the algorithm regardless of whether a
       significant QTL is detected. This now allows easy access to
       outlier statistics annd BLUPs for the first iteration when no QTL
@@ -55,10 +58,14 @@
 }
 \subsection{BUG FIXES}{
   \itemize{
+    \item Fixed a bug that outputted warning messages regarding a
+    \code{NaN} calculation from \code{sqrt(vatilde)} in \code{qtl.pick()}.
+    \item Fixed a bug that caused wgaim to crash if \code{method =
+      "random"} was used with the new version of asreml. 
     \item Fixed a bug that caused wgaim to crash with very recent
       versions of asreml (04/05/2015). 
     \item \code{cross2int()} now accepts R/qtl objects with cross type
-    \code{"bc","dh","rilsef"}.
+    \code{"bc","dh","riself"}.
     \item Fixed an issue with the internal function \code{fix.map()} that
     allowed some co-located sets of markers to appear in the final
     reduced linkage map.

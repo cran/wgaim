@@ -1,7 +1,7 @@
-106e4dcab783be3ee840d1df89fcc193 *DESCRIPTION
+7625c04024380a1290390c782a8f4d80 *DESCRIPTION
 c93629dadaea788fc233d8e6af5d4899 *NAMESPACE
-32c6c9ca8748be843aa2b71fea6c02df *R/wgaim9.R
-223500a555fee66eefdb847611a9ce54 *R/zzz.R
+d812ffe7d122422dd1b6a0cec2c8dcec *R/wgaim9.R
+a33f7c093d310a458c2028cfe222b14d *R/zzz.R
 69729679d9b3af734856be2f810d80bb *data/genoCxR.RData
 aadc5cf3439ab020a43547e88cc80567 *data/genoRxK.RData
 3042662de27c509d35564591da486cb6 *data/genoSxT.RData
@@ -9,11 +9,11 @@ be49ba1466854124981471e27d56287c *data/phenoCxR.RData
 a2401323fcc3638cc8e4c2c399c3d6d7 *data/phenoRxK.RData
 388a65846c7e4040806d92d4df85ae54 *data/phenoSxT.RData
 5185dd2af4628e723038101d3b4990ed *inst/CITATION
-01bf3e874fa01e1a6181bddf950d8f2c *inst/NEWS.Rd
+fb8aab077bd1d8028e0536d96afc2957 *inst/NEWS.Rd
 00e7125ae2d4b042cf2dda601d6b31b2 *inst/doc/CxRExample.R
 ec1d413e5f32219208560620fb1d42f8 *inst/doc/RxKExample.R
 8cafeadfd003575dcd03dc3a1dee70b5 *inst/doc/SxTExample.R
-3dc8096a8e96052bd652630432f48f31 *inst/doc/wgaim.pdf
+4063da89cf3bf6a86c6f13e9b7e16f2a *inst/doc/wgaim.pdf
 6280e25ffc1e2b4c9484479aca645dc4 *inst/extdata/genoCxR.csv
 971df2819ded051fc08ffb06c841751d *inst/extdata/genoRxK.csv
 260822c37c2d136e739466c4e4ca8e3a *inst/extdata/genoSxT.csv

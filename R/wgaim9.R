@@ -190,9 +190,9 @@ v.modify <- function (model){
     if (length(which.term) > 0) {
         model$G.param <- v.init(which.term, model$G.param)
     }
-    which.term <- grep("ints", names(model$G.param))
+    which.term <- grep("grp(\"ints\")", names(model$G.param))
     if (length(which.term) > 0) {
-        model$G.param <- v.init("ints", model$G.param)
+        model$G.param <- v.init("grp(\"ints\")", model$G.param)
     }
     model
 }
@@ -249,10 +249,10 @@ mergeData <- function(phenoData, geneticData, by) {
     if(p > q) {
         mats <- geneticData[whg,int.cnt]
         tmat <- t(mats)
-        xsvd <- svd(crossprod(tmat))
-        xsvd.half <- t(xsvd$v %*% (t(xsvd$u) * sqrt(xsvd$d)))
-        xsvd.inv <- solve(xsvd.half)
-        xtra <- tmat %*% xsvd.inv
+        ch <- chol(crossprod(tmat))
+        xsvd.half <- t(ch)
+        xsvd.inv <- chol2inv(ch)
+        xtra <- tmat %*% xsvd.inv %*% xsvd.half
         xsvd.df <- as.data.frame(xsvd.half)
         names(xsvd.df) <- paste("Tint.", 1:q, sep = "")
         xsvd.df[[by]] <- ids
@@ -274,58 +274,6 @@ mergeData <- function(phenoData, geneticData, by) {
     qtls.cnt <- grep("X\\.", names(asdata))
     invisible(list(asdata=asdata, cnt=cnt, p=p, q=q, xtra=xtra))
 }
-
-## mergeData <- function(phenoData, geneticData, by) {
-
-##     int.cnt <- 2:dim(geneticData)[2]
-##     p <- length(int.cnt)
-##     whg <- !duplicated(phenoData[,by])
-##     whg <- geneticData[, by] %in% phenoData[whg,by]
-##     ids <- as.character(geneticData[whg, by])
-##     q <- length(ids)
-##     phenoData <- cbind(ord = 1:nrow(phenoData), phenoData)
-##     if(p > q) {
-##         mats <- geneticData[whg,int.cnt]
-##         tmat <- t(mats)
-##         mm <- crossprod(tmat)
-##         xsvd <- svd(crossprod(tmat))
-##         sq <- xsvd$d^2
-##         sqp <- sq/sum(sq)
-##         ee <- - (1/log(length(sqp)))*sum(sqp*log(sqp))
-##         print(ee)
-## #        stop()
-## #        print(cumsum(sqp))
-## #        stop()
-##         xsvd.half <- xsvd$u[,c(1:30)] %*% diag(sqrt(xsvd$d[1:30]))
-##         xsvd.inv <- xsvd$u[,c(1:30)] %*% diag(1/sqrt(xsvd$d[1:30]))
-## #        xsvd.half <- xsvd$u[,1:175] %*% diag(sqrt(xsvd$d[1:175]))
-## #        mm <- xsvd$u[,1:75] %*% diag(xsvd$d[1:75]) %*% t(xsvd$v[,1:75])
-##         q <- 30
-## #        xsvd.half <- <- t(xsvd$v %*% (t(xsvd$u) * sqrt(xsvd$d)))
-## #        xsvd.inv <- solve(mm)
-##         xtra <- tmat %*% xsvd.inv
-##         xsvd.df <- as.data.frame(xsvd.half)
-##         names(xsvd.df) <- paste("Tint.", 1:q, sep = "")
-##         xsvd.df[[by]] <- ids
-##         asdata <- merge(phenoData, xsvd.df, all.x = TRUE, by = by)
-##         asdata <- asdata[order(asdata$ord), ]
-##         asdata <- asdata[, -2]
-##         cnt <- grep("Tint\\.", names(asdata))
-##         asdata[, cnt] <- asdata[, cnt]/100
-##     }
-##     else {
-##         xtra <- NULL
-##         asdata <- merge(phenoData, geneticData, by.x = by, by.y = by, all.x = TRUE, all.y = FALSE)
-##         asdata <- asdata[order(asdata$ord), ]
-##         asdata <- asdata[, -2]
-##         dnams <- names(asdata)
-##         cnt <- grep("Chr\\.", dnams)
-##         asdata[, cnt] <- asdata[, cnt]/100
-##     }
-##     qtls.cnt <- grep("X\\.", names(asdata))
-##     invisible(list(asdata=asdata, cnt=cnt, p=p, q=q, xtra=xtra))
-## }
-
 
 updateWgaim <- function(object, asdata, attempts, ...){
 #  attempts <- list(...)$attempts
@@ -683,6 +631,7 @@ qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, exclusion.wi
     oint <- c(ntj2)
     blups <- tint <- state
     tint[as.logical(state)] <- oint
+    vatilde <- abs(vatilde)
     blups[as.logical(state)] <- atilde/sqrt(vatilde)
     oint <- tint
     ## exclusion window
