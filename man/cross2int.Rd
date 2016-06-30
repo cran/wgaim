@@ -78,9 +78,9 @@ a list of class "\code{cross}" that also inherits the class
   each interval; "\code{intval}" contains the recalculated intervals
   based on the recombination fractions and the missing marker information.}
 \item{cor.markers}{
-If \code{rem.mark = TRUE}, a three column matrix with each row
-describing which pairwise markers are correlated and what chromosome
-they are from.}
+If \code{rem.mark = TRUE}, a four column matrix with each row
+describing which pairwise markers are co-located, the co-located set
+they belong to and what chromosome they are from.}
 \item{pheno}{
   A data.frame of phenotypic information with rows as individuals read
   in from \code{read.cross}. A copy of the column named by the "\code{id}" argument

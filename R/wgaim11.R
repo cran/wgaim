@@ -141,7 +141,7 @@ breakout = -1, TypeI = 0.05, attempts = 5, trace = TRUE, verboseLev = 0, ...)
         message("Found QTL on chromosome ", wchr, " ", gen.type, " ", wint)
         qtl.x <- gsub("Chr\\.", "X.", qtl[which.i])
         if (is.null(add.qtl$xtra))
-            phenoData[qtl.x] <- mD$asdata[qtl[which.i]] * 100
+            phenoData[[qtl.x]] <- mD$asdata[[qtl[which.i]]] * 100
         else {
             tmp.1 <- cbind.data.frame(geneticData[, merge.by], geneticData[, qtl[which.i]])
             names(tmp.1) <- c(merge.by, qtl.x)
@@ -552,7 +552,6 @@ qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, exclusion.wi
         vatilde <- apply(xtra, 1, function(el, vatilde) sum(el*(vatilde %*% el)), vatilde = vatilde)
 #        vatilde <- xtra %*% vatilde %*% t(xtra)
 #        vatilde <- diag(vatilde)
-        gnams <- names(state)[as.logical(state)]
     }
     else {
         ## atilde and var(atilde) for p < q
@@ -563,8 +562,9 @@ qtl.pick <- function(asr, intervalObj, asdata, gen.type, selection, exclusion.wi
         atilde <- asr$coefficients$random[grp]
         pevar <- sigma2 * asr$vcoeff$random[grp]
         vatilde <- sigma2 * gamma - pevar
-        gnams <- substring(rnams[grp], first=6)
+#        gnams <- substring(rnams[grp], first=6)
     }
+    gnams <- names(state)[as.logical(state)]
     names(atilde) <- gnams
     names(vatilde) <- gnams
     ntj2 <- ifelse(!is.na(atilde^2/vatilde), atilde^2/vatilde, 0)
@@ -717,8 +717,12 @@ fix.map <- function (full.data, rd = 3)
             pm[!(pm %in% nums)] <- nums[length(nums)] + 1
             clist <- split(names(emap), pm)
             if(any(pmt == 1)) len <- length(clist) - 1 else len <- length(clist)
-            clist <- do.call("rbind", lapply(clist[1:len], function(cl)
-                                             t(combn(cl, 2))))
+            combl <- lapply(clist[1:len], function(cl){
+                cl <- as.data.frame(t(combn(cl, 2)))
+                names(cl) <- c("marker1", "marker2")
+                cl})
+            clist <- do.call("rbind", combl)
+            clist$bin <- rep(1:length(combl), times = sapply(combl, nrow))
             dlist <- split.data.frame(t(el$data), pm)
             dmark <- lapply(dlist[1:len], function(dl) {
                 con <- apply(dl, 2, function(ell){
@@ -747,6 +751,7 @@ fix.map <- function (full.data, rd = 3)
     cor.mark <- as.data.frame(do.call("rbind", lapply(drop.mark[!chre], function(cm) cm$clist)))
     chrn <- unlist(lapply(drop.mark[!chre], function(cm) nrow(cm$clist)))
     cor.mark$chr <- rep(names(nmar(full.data))[!chre], times = chrn)
+    cor.mark$bin <- paste(cor.mark$chr, cor.mark$bin, sep = ".")
     newmap$cor.markers <- cor.mark
     newmap
 }
@@ -832,7 +837,6 @@ miss.q <- function(theta, chr){
 link.map <- function(object, ...)
   UseMethod("link.map")
 
-
 link.map.cross <- function(object, chr, chr.dist, marker.names = "markers", tick = FALSE, squash = TRUE, m.cex = 0.6, ...){
   circ <- function(x, y, shiftx = 0, shifty = 0, ely = 1, elx = 1)
     ((x - shiftx)^2)/elx + ((y - shifty)^2)/ely
@@ -877,13 +881,14 @@ link.map.cross <- function(object, chr, chr.dist, marker.names = "markers", tick
 }
   maxlen <- max(unlist(lapply(map, max)))
   minlen <- min(unlist(lapply(map, min)))
+  omap <- map
   if(is.null(marker.names)) {
     chrpos <- 1:n.chr
     thelim <- range(chrpos) + c(-0.5, 0.5)
   }
   else {
     if(all(is.na(pmatch(marker.names, c("markers","dist")))))
-      stop("marker.names argument must be either \"dist\" or \"markers\"")
+      stop("marker.names argument must be either \"dist\", or \"markers\".")
     if(!is.na(pmatch("cex", names(dots))))
       dots$cex <- NULL
 #    else cex <- par("cex")
@@ -892,7 +897,11 @@ link.map.cross <- function(object, chr, chr.dist, marker.names = "markers", tick
     else
       chrpos <- seq(1, n.chr * 2, by = 2)
     thelim <- range(chrpos) + c(-1.6, 1.35)
-    for(i in 1:n.chr) {
+    if(!is.null(fmark <- attr(object, "flanking"))){
+        map <- lapply(map, function(el, fmark)
+            el[names(el) %in% fmark], fmark)
+    }
+    for(i in 1:n.chr){
         mt[[i]] <- map[[i]]
       if(length(mt[[i]]) > 1){
           conv <- par("pin")[2]/maxlen
@@ -905,7 +914,8 @@ link.map.cross <- function(object, chr, chr.dist, marker.names = "markers", tick
       }
       }
     }
-    maxlen <- max(unlist(lapply(mt, max)))
+
+    maxlen <- max(c(unlist(lapply(omap, max)),unlist(lapply(mt, max))))
     names(mt) <- names(map)
   }
   plot(0, 0, type = "n", ylim = c(maxlen, minlen), xlim = thelim,
@@ -925,6 +935,7 @@ link.map.cross <- function(object, chr, chr.dist, marker.names = "markers", tick
       segments(chrpos[i] + 0.3, map[[i]], chrpos[i] + 0.4, mt[[i]])
       segments(chrpos[i] + 0.40, mt[[i]], chrpos[i] + 0.45, mt[[i]])
     }
+    map[[i]] <- omap[[i]]
     barl <- chrpos[i]- 0.03
     barr <- chrpos[i]+ 0.03
     segments(barl, min(map[[i]]), barl, max(map[[i]]), lwd = 1)
@@ -943,9 +954,7 @@ link.map.cross <- function(object, chr, chr.dist, marker.names = "markers", tick
   invisible(list(mt = mt, map = map, chrpos = chrpos))
 }
 
-link.map.wgaim <- function (object, intervalObj, chr, chr.dist, marker.names = "markers",
-    list.col = list(q.col = "light blue", m.col = "red", t.col = "light blue"),
-    list.cex = list(t.cex = 0.6, m.cex = 0.6), trait.labels = NULL, tick = FALSE, ...)
+link.map.wgaim <- function (object, intervalObj, chr, chr.dist, marker.names = "markers", flanking = TRUE, list.col = list(q.col = "light blue", m.col = "red", t.col = "light blue"), list.cex = list(t.cex = 0.6, m.cex = 0.6), trait.labels = NULL, tick = FALSE, ...)
 {
     dots <- list(...)
     if (missing(intervalObj))
@@ -974,6 +983,8 @@ link.map.wgaim <- function (object, intervalObj, chr, chr.dist, marker.names = "
         list.cex$m.cex <- 0.6
     if(is.null(list.cex$t.cex))
         list.cex$t.cex <- 0.6
+    if(flanking)
+        attr(intervalObj, "flanking") <- unique(c(qtlm[,1],qtlm[,3]))
     lmap <- link.map(intervalObj, chr, chr.dist, marker.names = marker.names,
         tick = tick, squash = TRUE, m.cex = list.cex$m.cex, ...)
     map <- lmap$map
@@ -1119,8 +1130,7 @@ link.map.wgaim <- function (object, intervalObj, chr, chr.dist, marker.names = "
         title("Genetic Map with QTL")
 }
 
-link.map.default <- function (object, intervalObj, chr, chr.dist, marker.names = "markers",
-    list.col = list(q.col = rainbow(length(object)), m.col = "red", t.col = rainbow(length(object))),
+link.map.default <- function (object, intervalObj, chr, chr.dist, marker.names = "markers", flanking = TRUE, list.col = list(q.col = rainbow(length(object)), m.col = "red", t.col = rainbow(length(object))),
     list.cex = list(m.cex = 0.6, t.cex = 0.6), trait.labels = NULL, tick = FALSE, ...)
 {
     old.par <- par(no.readonly = TRUE)
@@ -1171,8 +1181,10 @@ link.map.default <- function (object, intervalObj, chr, chr.dist, marker.names =
         }
     }
     link.map(dlist, intervalObj, chr, chr.dist, marker.names = marker.names,
-        list.col = list.col, list.cex = list.cex, trait.labels = trait, tick = tick, ...)
-  }
+        list.col = list.col, list.cex = list.cex, trait.labels = trait, tick = tick, flanking = flanking, ...)
+}
+
+
 
 out.stat <- function (object, intervalObj, int = TRUE, iter = NULL, chr = NULL, stat = "os",
     ...)

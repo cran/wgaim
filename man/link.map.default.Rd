@@ -8,7 +8,7 @@ for multiple traits obtained from a list of \code{wgaim} fits.
 }
 \usage{
 \method{link.map}{default}(object, intervalObj, chr, chr.dist, marker.names
-    = "markers", list.col = list(q.col = rainbow(length(object)),
+    = "markers", flanking = TRUE, list.col = list(q.col = rainbow(length(object)),
     m.col = "red", t.col = rainbow(length(object))), list.cex =
     list(m.cex = 0.6, t.cex = 0.6), trait.labels = NULL, tick = FALSE, \ldots)
 }
@@ -24,7 +24,11 @@ for multiple traits obtained from a list of \code{wgaim} fits.
   \item{marker.names}{a character string naming the type of marker
     information to plot. If "\code{dist}" then distances names
     plotted alongside each chromosome on the left. If "\code{markers}"
-    then marker names are plotted instead. Defaults to "\code{markers}".}
+    then marker names are plotted instead. Defaults to
+    "\code{markers}".}
+  \item{flanking}{logical value. If \code{TRUE} then only plot marker
+     names or distances for flanking markers of the QTL. Defualts to
+     \code{TRUE}}
   \item{list.col}{named list of colors used to highlight the QTL regions and
     their flanking markers. \code{q.col} is the colors of the QTL
     regions (defaults to \code{rainbow(n)} where \code{n} is the length

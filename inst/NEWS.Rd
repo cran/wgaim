@@ -10,6 +10,9 @@
 }
   \subsection{NEW FEATURES}{
     \itemize{
+      \item{The argument \code{flanking} has been added to the QTL
+	plotting functions ro ensure that only flanking markers or
+	linked markers are plotted and highlighted on the linkage map}
       \item The forward selection algorithm has been accelerated further
       by smart matrix decomposition of the relationship matrix. Users
       can expect around a 35\% reduction in computation time.
@@ -58,6 +61,8 @@
 }
 \subsection{BUG FIXES}{
   \itemize{
+    \item Fixed a bug that caused \code{wgaim.asreml()} to bomb out if
+      the number of markers was less than the number of genotypes.
     \item Fixed a bug that outputted warning messages regarding a
     \code{NaN} calculation from \code{sqrt(vatilde)} in \code{qtl.pick()}.
     \item Fixed a bug that caused wgaim to crash if \code{method =
