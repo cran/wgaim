@@ -1,35 +1,31 @@
 \name{wgaim-internal}
-\alias{fix.map}
-\alias{envDestruct}
+\alias{constructCM}
+\alias{fixMap}
+\alias{envFix}
 \alias{getQTL}
 \alias{addiag}
-\alias{miss.q}
+\alias{imputeGen}
 \alias{wgaim.default}
-\alias{qtl.pick}
-\alias{mergeData}
-\alias{updateWgaim}
-\alias{error.code}
-\alias{v.modify}
-\alias{v.init}
+\alias{qtlSelect}
+\alias{vModify}
+\alias{theme_scatter}
 \title{Internal wgaim functions}
 \description{
 These are internal \code{wgaim} functions that are not intended to be
-directly called by the user
+directly called by the user.
 }
 \usage{
-fix.map(full.data, rd = 3)
+constructCM(genoData, scale.method = "diag")
+fixMap(full.data, rd = 3)
+envFix(model, asremlEnv)
 getQTL(object, intervalObj)
 addiag(x = 1, di = 0, nrow.arg, ncol.arg = n)
-miss.q(theta, chr)
-qtl.pick(asr, intervalObj, asdata, gen.type, selection,
-        exclusion.window, state, verboseLev)
-mergeData(phenoData, geneticData, by)
-error.code(ec = NULL)
-v.modify(model)
-v.init(term, G.param)
-envDestruct(model, keep)
-updateWgaim(object, asdata, attempts, \ldots)
+imputeGen(theta, chr, dom = TRUE)
 \method{wgaim}{default}(baseModel, \ldots)
+qtlSelect(asm, phenoData, intervalObj, gen.type, selection,
+          exclusion.window, state, verboseLev)
+vModify(model, merge.by)
+theme_scatter(base_size = 11, base_family = "")
 }
-\author{Julian Taylor, Simon Diffey, Ari Verbyla and Brian Cullis}
+\author{Julian Taylor and Ari Verbyla}
 \keyword{internal}

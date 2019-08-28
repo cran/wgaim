@@ -5,22 +5,21 @@ utils,
 graphics,
 grDevices,
 qtl,
-lattice)
+ggplot2)
 
 ##[exports]
 export(
 cross2int,
-fix.map,
+fixMap,
 getQTL,
-link.map,
-link.map.cross,
-link.map.default,
-link.map.wgaim,
-mergeData,
-out.stat,
+linkMap,
+linkMap.cross,
+linkMap.default,
+linkMap.wgaim,
+outStat,
 print.wgaim,
 tr.wgaim,
-qtl.pick,
+qtlSelect,
 qtlTable,
 summary.wgaim,
 wgaim,
@@ -30,10 +29,10 @@ wgaim.default)
 ##[S3 Methods]
 S3method(summary, wgaim)
 S3method(print, wgaim)
-S3method(link.map, wgaim)
+S3method(linkMap, wgaim)
 S3method(tr, wgaim)
-S3method(link.map, cross)
-S3method(link.map, default)
+S3method(linkMap, cross)
+S3method(linkMap, default)
 S3method(wgaim, asreml)
 S3method(wgaim, default)
 
