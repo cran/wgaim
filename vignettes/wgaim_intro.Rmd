@@ -24,7 +24,7 @@ definitive reference for this software is @tv11jss with full reference given as
 <br>
 
 Taylor, J. and Verbyla, A (2011) R package **wgaim**: QTL Analysis in Bi-Parental
-Populations using Linear Mixed Model, *Journal of Statistical Software*, **40**.
+Populations using Linear Mixed Models, *Journal of Statistical Software*, **40**(7).
 
 <br>
 

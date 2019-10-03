@@ -149,7 +149,9 @@ wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = T
             qtlModel <- update(qtlModel, random. = ran.form, ...)
             list.coefs <- qtlModel$coefficients$random
             zind <- grep("X\\.", rownames(list.coefs))
-            coef.list[[iter]] <- list.coefs[zind, 1]
+            sub.list <- list.coefs[zind, 1]
+            names(sub.list) <- rownames(list.coefs)[zind]
+            coef.list[[iter]] <- sub.list
             vcoef.list[[iter]] <- qtlModel$vcoeff$random[zind]
         }
         else {
@@ -162,7 +164,9 @@ wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = T
             qtlModel <- update(qtlModel, fixed. = fix.form, ...)
             list.coefs <- qtlModel$coefficients$fixed
             zind <- grep("X\\.", rownames(list.coefs))
-            coef.list[[iter]] <- rev(list.coefs[zind, 1])
+            sub.list <- rev(list.coefs[zind, 1])
+            names(sub.list) <- rev(rownames(list.coefs)[zind])
+            coef.list[[iter]] <- sub.list
             vcoef.list[[iter]] <- rev(qtlModel$vcoeff$fixed[zind])
         }
         iter <- iter + 1
@@ -436,7 +440,7 @@ qtlSelect <- function(asm, phenoData, intervalObj, gen.type, selection, exclusio
         cat("=====================================\n")
         rterms <- attr(terms.formula(asm$call$random), "term.labels")
         vmterm <- rterms[grep("vm.*covObj", rterms)]
-        pv <- predict(asm, classify = vmterm, only = vmterm, vcov=TRUE, maxiter=1, data = phenoData)
+        pv <- predict(asm, classify = vmterm, only = vmterm, vcov=TRUE, data = phenoData)
         avar <- asm$vparameters[grep("vm.*covObj", names(asm$vparameters))]*sigma2
         atilde <- pv$pvals[, 'predicted.value']
         qtilde <- as.vector(cov.env$trans %*% atilde)
@@ -526,7 +530,7 @@ cross2int <- function(object, impute = "MartinezCurnow", consensus.mark = TRUE, 
                       subset = NULL){
   cls <- class(object)[1]
   if(!(cls %in% c("bc","dh","f2","riself")))
-    stop("This function is restricted to populations containing only two genotypes.")
+    stop("This function is restricted to populations inheriting from classes \"bc\",\"dh\",\"f2\",\"riself\".")
   object <- drop.nullmarkers(object)
   if(!(id %in% names(object$pheno)))
     stop("The unique identifier for the genotypic rows, ", deparse(substitute(id)), ",cannot be found in genotypic data")
@@ -564,6 +568,8 @@ cross2int <- function(object, impute = "MartinezCurnow", consensus.mark = TRUE, 
       else {
           el$dist <- diff(el$map)/100
           el$theta <- 0.5*(1-exp(-2*el$dist))
+          if(cls %in% "riself")
+              el$theta <- (el$theta/2)/(1 - el$theta)
           elambda <- el$theta/(2*el$dist*(1-el$theta))
           if(impute == "MartinezCurnow")
               el$imputed.data <- imputeGen(el$theta, el$imputed.data, dom = FALSE)$add
@@ -676,80 +682,83 @@ imputeGen <-  function (theta, chr, dom = TRUE){
                c = (thL*(1- thL)*(1 - 2*thR*(1 - thR)))/(thLR*(1 - thLR)),
                d = (thR*(1- thR)*(1 - 2*thL*(1 - thL)))/(thLR*(1 - thLR)),
                e = ((thL^2 + (1- thL)^2)*(thR^2 + (1 - thR)^2))/(thLR^2 + (1 - thLR)^2)
-        )}
-    wh <- which(is.na(chr), arr.ind = TRUE)
-    wh <- wh[order(wh[,"row"], wh[,"col"]),]
-    sp <- split(wh[,"col"], wh[,"row"])
-    lr <- lapply(sp, function(el, n){
-        left <- el - 1; right <- el + 1
-        while(any(c(left,right) %in% el)){
-            left[left %in% el] <- left[left %in% el] - 1
-            right[right %in% el] <- right[right %in% el] + 1
-        }
-        left[left == 0] <- right[right == n+1] <- NA
-        list(left,right)
-    }, n = ncol(chr))
-    left <- unlist(sapply(lr, "[", 1))
-    right <- unlist(sapply(lr, "[", 2))
-    xL <- chr[cbind(wh[,"row"], left)]
-    xR <- chr[cbind(wh[,"row"], right)]
-    whc <- wh[,"col"]
-    filld <- filla <- c()
-    for(i in 1:nrow(wh)){
-        if(is.na(left[i]) & is.na(right[i]))
-            filld[i] <- filla[i] <- 0
-        else if(!is.na(left[i]) & is.na(right[i])){
-            tl <- th.f(theta, whc[i]:(left[i] + 1))
-            filla[i] <- xL[i]*(1 - 2*tl)
-            if(dom){
-                if(abs(xL[i]) == 1)
-                    filld[i] <- 2*tl*(1 - tl)
-                else filld[i] <- 1 - 2*tl*(1 - tl)
-            }
-        } else if(is.na(left[i]) & !is.na(right[i])){
-            tr <- th.f(theta, (whc[i] + 1):(right[i]))
-            filla[i] <- xR[i]*(1 - 2*tr)
-            if(dom){
-                if(abs(xR[i]) == 1)
-                    filld[i] <- 2*tr*(1 - tr)
-                else filld[i] <- 1 - 2*tr*(1 - tr)
-            }
-        } else {
-            tl <- th.f(theta, whc[i]:(left[i] + 1))
-            tr <- th.f(theta, (whc[i] + 1):right[i])
-            tlr <- tl + tr - 2*tl*tr
-            if(tlr == 0)
-                filla[i] <- xL[i]
-            else {
-            lambda <- (tr*(1 - tr)*(1 - 2*tl))/(tlr*(1 - tlr))
-            rho <- (tl*(1 - tl)*(1 - 2*tr))/(tlr*(1 - tlr))
-            filla[i] <- xL[i]*lambda + xR[i]*rho
-            }
-            if(dom){
-                if(abs(xL[i]*xR[i]) > 0){
-                    if(xL[i] == xR[i])
-                        filld[i] <- dom.gen(tl, tr, tlr, "a")
-                    else filld[i] <- dom.gen(tl, tr, tlr, "b")
-                }
-                else {
-                    if(abs(xL[i]) == 1)
-                        filld[i] <- dom.gen(tl, tr, tlr, "c")
-                    else {
-                        if(abs(xR[i]) == 1)
-                            filld[i] <- dom.gen(tl, tr, tlr, "d")
-                        else filld[i] <- dom.gen(tl, tr, tlr, "e")
-                    }
-                }
-            }
-        }
-    }
+               )}
     chrd <- NULL
     if(dom){
         chrd <- chr + 1
         chrd[chrd %in% 2] <- 0
-        chrd[wh] <- filld
     }
-    chr[wh] <- filla
+    wh <- which(is.na(chr), arr.ind = TRUE)
+    if(dim(wh)[1] != 0){
+        wh <- wh[order(wh[,"row"], wh[,"col"]),,drop = FALSE]
+        sp <- split(wh[,"col"], wh[,"row"])
+        lr <- lapply(sp, function(el, n){
+            left <- el - 1; right <- el + 1
+            while(any(c(left,right) %in% el)){
+                left[left %in% el] <- left[left %in% el] - 1
+                right[right %in% el] <- right[right %in% el] + 1
+            }
+            left[left == 0] <- right[right == n+1] <- NA
+            list(left,right)
+        }, n = ncol(chr))
+        left <- unlist(sapply(lr, "[", 1))
+        right <- unlist(sapply(lr, "[", 2))
+        xL <- chr[cbind(wh[,"row"], left)]
+        xR <- chr[cbind(wh[,"row"], right)]
+        whc <- wh[,"col"]
+        filld <- filla <- c()
+        for(i in 1:nrow(wh)){
+            if(is.na(left[i]) & is.na(right[i]))
+                filld[i] <- filla[i] <- 0
+            else if(!is.na(left[i]) & is.na(right[i])){
+                tl <- th.f(theta, whc[i]:(left[i] + 1))
+                filla[i] <- xL[i]*(1 - 2*tl)
+                if(dom){
+                    if(abs(xL[i]) == 1)
+                        filld[i] <- 2*tl*(1 - tl)
+                    else filld[i] <- 1 - 2*tl*(1 - tl)
+                }
+            } else if(is.na(left[i]) & !is.na(right[i])){
+                tr <- th.f(theta, (whc[i] + 1):(right[i]))
+                filla[i] <- xR[i]*(1 - 2*tr)
+                if(dom){
+                    if(abs(xR[i]) == 1)
+                        filld[i] <- 2*tr*(1 - tr)
+                    else filld[i] <- 1 - 2*tr*(1 - tr)
+                }
+            } else {
+                tl <- th.f(theta, whc[i]:(left[i] + 1))
+                tr <- th.f(theta, (whc[i] + 1):right[i])
+                tlr <- tl + tr - 2*tl*tr
+                if(tlr == 0)
+                    filla[i] <- xL[i]
+                else {
+                    lambda <- (tr*(1 - tr)*(1 - 2*tl))/(tlr*(1 - tlr))
+                    rho <- (tl*(1 - tl)*(1 - 2*tr))/(tlr*(1 - tlr))
+                    filla[i] <- xL[i]*lambda + xR[i]*rho
+                }
+                if(dom){
+                    if(abs(xL[i]*xR[i]) > 0){
+                        if(xL[i] == xR[i])
+                            filld[i] <- dom.gen(tl, tr, tlr, "a")
+                        else filld[i] <- dom.gen(tl, tr, tlr, "b")
+                    }
+                    else {
+                        if(abs(xL[i]) == 1)
+                            filld[i] <- dom.gen(tl, tr, tlr, "c")
+                        else {
+                            if(abs(xR[i]) == 1)
+                                filld[i] <- dom.gen(tl, tr, tlr, "d")
+                            else filld[i] <- dom.gen(tl, tr, tlr, "e")
+                        }
+                    }
+                }
+            }
+        }
+        chr[wh] <- filla
+        if(dom)
+            chrd[wh] <- filld
+    }
     list(add = chr, dom = chrd)
 }
 

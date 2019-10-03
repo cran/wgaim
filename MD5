@@ -1,6 +1,6 @@
-33080a37c831cc2d42ffca7e4a417c1e *DESCRIPTION
+8f494d372fe5cc2e6838c50d981c7861 *DESCRIPTION
 0b3237db6c2d86381f6f82293348c76a *NAMESPACE
-d38740a7c9b5cbbd516781714cb4d24b *R/wgaim15.R
+cb77320ed3c0a4ea731b63d90c0b6605 *R/wgaim16.R
 62cf6401b45c13eeb6baf17043805adc *R/zzz.R
 ca250a4b03a5e8474d8bfab09e11d55d *build/vignette.rds
 69729679d9b3af734856be2f810d80bb *data/genoCxR.RData
@@ -10,12 +10,12 @@ be49ba1466854124981471e27d56287c *data/phenoCxR.RData
 4e3eec839a94941ff1323d5ee16904c4 *data/phenoRxK.RData
 388a65846c7e4040806d92d4df85ae54 *data/phenoSxT.RData
 5185dd2af4628e723038101d3b4990ed *inst/CITATION
-9454253f63484e507d7be7af501812c5 *inst/NEWS.Rd
+94522d0a7799c0aa39ccf905c470aceb *inst/NEWS.Rd
 9fc84433a7c516a01ada0512db11b8cb *inst/doc/CxRExample.R
 6e912e3866193cd4127428961c3ed2ff *inst/doc/RxKExample.R
 0a5fb8433f9aad833741150066a9507f *inst/doc/SxTExample.R
-9b3419d730458ab9a2d8b182363271cc *inst/doc/wgaim_intro.Rmd
-9e0df7bde7fdd0625d7bb1e1b789633a *inst/doc/wgaim_intro.html
+85dcf15cc0c3a6b1946101feffdbf46b *inst/doc/wgaim_intro.Rmd
+f028550b15a1689978e2f5bea73b4738 *inst/doc/wgaim_intro.html
 6280e25ffc1e2b4c9484479aca645dc4 *inst/extdata/genoCxR.csv
 971df2819ded051fc08ffb06c841751d *inst/extdata/genoRxK.csv
 260822c37c2d136e739466c4e4ca8e3a *inst/extdata/genoSxT.csv
@@ -40,10 +40,10 @@ ec6aa7faf284ec8837875f12316cde68 *man/phenoSxT.Rd
 796f727f49eab2576aa8556bf00e5419 *man/wgaim-package.Rd
 7bb3eec1713f198347875c3800372c29 *man/wgaim.asreml.Rd
 7d1864ce2b93fc385600a80013ba241f *vignettes/biometrics.csl
-bd8b1b01f9dd74a7bf265097e5922847 *vignettes/intro.bib
+ec6e0fbad5a2caf371d5e34bdbed0d31 *vignettes/intro.bib
 85510541a2a953db35e5221e9501fc01 *vignettes/link-1.png
 ace9ad2745372780057d0d5502884cdd *vignettes/out-1.png
 54f142e892958d02ddf4e678eb3466ca *vignettes/out-2.png
 6806750167b4cbbb22f1d9472d52e4cc *vignettes/residuals-1.png
 8edf0f89c3a03d85438d7f2d102a0c07 *vignettes/variogram-1.png
-9b3419d730458ab9a2d8b182363271cc *vignettes/wgaim_intro.Rmd
+85dcf15cc0c3a6b1946101feffdbf46b *vignettes/wgaim_intro.Rmd

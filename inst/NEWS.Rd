@@ -1,6 +1,6 @@
 \name{news}
 \title{Release information for wgaim}
-\section{Changes in version 2.0-0}{
+\section{Changes in version 2.0-x}{
 \subsection{NEW FEATURES}{
   \itemize{
     \item Version 2.0-x of \pkg{wgaim} is here and it celebrates
@@ -41,12 +41,17 @@
   }
 }
 \subsection{BUG FIXES}{
-\itemize{
-  \item The use of "." in the chromosome names muddles regular
-  expression string matching in parts of the wgaim call. There is now
-  code in \code{cross2int()} to remove "."s from any chromosome names.
-  \item Flanking marker highlighting in \code{linkMap.wgaim()} was
-  incorrect and has been amended.
+  \itemize{
+    \item Fixed a bug that caused \code{summary.wgaim()} when only one
+    QTL was found.
+    \item Removed \code{maxiter = 1} from internal
+    \code{predict.asreml()} to prevent spurious output of
+    non-convergence warnings.
+    \item The use of "." in the chromosome names muddles regular
+    expression string matching in parts of the wgaim call. There is now
+    code in \code{cross2int()} to remove "."s from any chromosome names.
+    \item Flanking marker highlighting in \code{linkMap.wgaim()} was
+    incorrect and has been amended.
 }
 }
 }
