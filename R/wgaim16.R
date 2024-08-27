@@ -4,7 +4,7 @@ UseMethod("wgaim")
 wgaim.default <- function(baseModel, ...)
   stop("Currently the only supported method is \"asreml\"")
 
-wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = TRUE, gen.type = "interval", method = "fixed", selection = "interval", exclusion.window = 20, breakout = -1, TypeI = 0.05, trace = TRUE, verboseLev = 0, ...)
+wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = TRUE, gen.type = "interval", method = "fixed", selection = "interval", force = FALSE, exclusion.window = 20, breakout = -1, TypeI = 0.05, trace = TRUE, verboseLev = 0, ...)
 {
     if (!baseModel$converge) {
         cat("Warning: Base model has not converged. Updating base model\n")
@@ -71,7 +71,7 @@ wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = T
         merge.by <- "Gsave"
     }
     qtlModel <- baseModel
-    if(ncol(genoData) > nrow(genoData)){
+    if((ncol(genoData) > nrow(genoData)) & !force){
         cov.env <- constructCM(genoData)
         covObj <- cov.env$relm
         vmterms <- c(paste("vm","(",merge.by,", covObj)", sep = ""), merge.by)
@@ -119,7 +119,7 @@ wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = T
         phenoData <- phenoData[, -2]
         mout <- (1:ncol(genoData))[!as.logical(state)]
         genoSub <- genoData[, -mout]
-        if(ncol(genoSub) > nrow(genoSub)){
+        if((ncol(genoSub) > nrow(genoSub)) & !force){
             cov.env <- constructCM(genoSub)
             covObj <- cov.env$relm
             attr(intervalObj, "env") <- cov.env
@@ -128,11 +128,13 @@ wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = T
             covObj <- cbind.data.frame(rownames(genoSub), genoSub)
             names(covObj)[1] <- merge.by
             if(is.null(qtlModel$call$mbf$ints) & vm){
+                attr(intervalObj, "env") <- NULL
                 rterms <- unlist(strsplit(deparse(qtlModel$call$random[[2]]), " \\+ "))
-                rterms <- rterms[!(vmterms %in% rterms)]
+                rterms <- rterms[!(rterms %in% vmterms)]
                 qtlModel$call$mbf$ints$key <- rep(merge.by, 2)
                 qtlModel$call$mbf$ints$cov <- "covObj"
                 ran.form <- as.formula(paste(c("~ mbf('ints')", merge.by, rterms), collapse = " + "))
+                qtlModel$call$random <- ran.form
             }
         }
         assign("covObj", covObj, envir = parent.frame())
@@ -176,6 +178,7 @@ wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = T
     qtl.list$method <- method
     qtl.list$type <- gen.type
     qtl.list$diag <- ldiag
+    qtl.list$iterations <- iter
     if (length(qtl)) {
         qtl.list$diag$coef.list <- coef.list
         qtl.list$diag$vcoef.list <- vcoef.list
@@ -183,8 +186,8 @@ wgaim.asreml <- function (baseModel, intervalObj, merge.by = NULL, fix.lines = T
         dimnames(qtl.list$diag$lik.mat)[[2]] <- c("L0","L1","Statistic","Pvalue")
         qtl.list$diag$state <- state
         qtl.list$diag$genetic.term <- genetic.term
-        qtl.list$diag$rel.scale <- cov.env$scale
-        qtl.list$iterations <- iter - 1
+        qtl.list$diag$rel.scale <- 1
+        if(exists("cov.env")) qtl.list$diag$rel.scale <- cov.env$scale
         qtl.list$breakout <- ifelse(breakout != -1, TRUE, FALSE)
         qtl.list$qtl <- qtl
         qtl.list$effects <- coef.list[[iter - 1]]
@@ -518,7 +521,7 @@ qtlSelect <- function(asm, phenoData, intervalObj, gen.type, selection, exclusio
     wnams <- names(state)[schr %in% mchr]
     inums <- as.numeric(sapply(strsplit(wnams, "\\."),"[", 3))
     dists <- intervalObj$geno[[mchr]]$map
-    if(gen.type == "interval")
+    if((gen.type == "interval") & (length(dists) > 1))
         dists <- dists[2:length(dists)] - diff(dists)/2
     dists <- dists[inums]
     exc <- wnams[abs(dists - dists[mint]) <= exclusion.window]
@@ -1125,6 +1128,7 @@ theme_scatter <- function (base_size = 11, base_family = "") {
         panel.grid.major.x = element_blank(),
         panel.background = element_blank(),
         axis.text.x = element_text(size = base_size),
+        axis.ticks.x = element_blank(),
         axis.text.y = element_text(size = base_size),
         strip.text = element_text(size = base_size))
     }
@@ -1194,8 +1198,7 @@ outStat <- function (object, intervalObj, iter = NULL, chr = NULL, statistic = "
         dist <- rep(dist, length(iter))
         ointd <- cbind(do.call("rbind.data.frame", ointl), dist = dist, iteration = char.iter)
         gp <- ggplot(ointd, aes_string(x = "dist", y = "values", colour = "chr")) +
-            facet_wrap( ~ iteration, ncol = 1) + geom_line() +
-            scale_x_continuous(breaks = dist, labels = rep("", length(dist))) +
+            facet_wrap( ~ iteration, ncol = 1) + geom_line() + geom_rug(sides = "b", length = unit(0.02, "npc")) +
             ylab(y.lab) + xlab("") + theme_scatter()
         if(chr.lines){
             if(length(chr) > 1){
@@ -1204,7 +1207,6 @@ outStat <- function (object, intervalObj, iter = NULL, chr = NULL, statistic = "
             }
         gp <- gp + geom_vline(xintercept = dist[ci], colour = "grey80", size = 1)
         }
- #       gp <- gp + coord_cartesian(ylim = c(yl, yr[2] + diff(yr)/12), clip="off")
     }
     if(!is.null(qtl <- object$QTL$qtl)){
         iterq <- iter[iter < (length(qtl) + 1)]
@@ -1243,24 +1245,16 @@ outStat <- function (object, intervalObj, iter = NULL, chr = NULL, statistic = "
                #
         }
     }
-    if(length(iter) == 1){
-        if(iter == object$QTL$iterations + 1){
+    if(object$QTL$iterations == 1){
             yrc <- ggplot_build(gp)$layout$panel_scales_y[[1]]$range$range
             ylc <- ifelse(statistic == "outlier", 0, yrc[1] + abs(diff(yrc))/40)
-        }
     }
     if(ann.labels){
-        chrl <- chrlen(intervalObj)/100
-        dist.label <- cumsum(chrl) - chrl/2
         ann.iter <- paste("Iteration: ", iter[length(iter)], sep = "")
-        gb <- ggplot_build(gp)$layout
-        mr <- diff(gb$panel_params[[1]]$y.minor_source[1:2])
-        nudge <- mr*(11/20 + length(iter)/10)
-        yl <- ifelse(statistic == "outlier", - nudge, (gb$panel_scales_y[[1]]$range$range*1.01 - nudge))
-        ann <- cbind.data.frame(values = rep(yl, length(chr)), dist = dist.label, iteration = ann.iter)
-        ann$chr <- chr
-        gp <- gp + geom_text(data = ann, aes_string(label = "chr"), size = 3.5, colour = "grey40") +
-            coord_cartesian(ylim = c(ylc, yrc[2] + diff(yrc)/12), clip="off")
+        annd <- ointd[ointd$iteration %in% ann.iter,]
+        dist.label <- sapply(split(annd$dist, annd$chr), function(el)
+            min(el) + (max(el) - min(el))/2 )
+        gp <- gp + scale_x_continuous(breaks = dist.label, labels = chr) + coord_cartesian(ylim = c(ylc, yrc[2] + diff(yrc)/12))
     }
     gp
 }
